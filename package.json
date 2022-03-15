@@ -1,0 +1,45 @@
+{
+  "name": "@lisa-plugin/btest",
+  "version": "1.0.0",
+  "description": "LISA plugin for behavior testing",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "nodemon --exec npm run build -w ./src -e ts",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "lib"
+  ],
+  "lisa": {
+    "friendlyName": "btest",
+    "taskPath": "./lib/tasks"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LISTENAI/lisa-plugin-btest.git"
+  },
+  "author": "LISTENAI",
+  "maintainers": [
+    "lpmadmin <lpm.admin@listenai.com>",
+    "xychen <xychen@listenai.com>",
+    "zbzhao <zbzhao@listenai.com>"
+  ],
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/LISTENAI/lisa-plugin-btest/issues"
+  },
+  "homepage": "https://github.com/LISTENAI/lisa-plugin-btest#readme",
+  "dependencies": {
+    "@listenai/lisa_core": "^2.0.5",
+    "cli-ux": "^6.0.9",
+    "serialport": "^10.4.0",
+    "usb2xxx": "^1.0.0-alpha.4"
+  },
+  "devDependencies": {
+    "@types/minimist": "^1.2.2",
+    "@types/node": "^17.0.21",
+    "nodemon": "^2.0.15",
+    "typescript": "^4.6.2"
+  }
+}
