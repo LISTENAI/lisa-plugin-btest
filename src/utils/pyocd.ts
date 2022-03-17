@@ -1,7 +1,7 @@
 import execa from 'execa';
 import getEnv from './getEnv';
 
-interface Probe {
+export interface Probe {
   unique_id: string;
   info: string;
   board_name: string;

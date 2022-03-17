@@ -1,8 +1,8 @@
 import { job } from '@listenai/lisa_core/lib/task';
-import { SerialPort } from 'serialport';
 import UsbDevice from 'usb2xxx';
 
 import { listProbes } from '../utils/pyocd';
+import { listShells } from '../utils/shell';
 
 export default () => {
   job('list:probe', {
@@ -23,7 +23,7 @@ export default () => {
   job('list:shell', {
     title: '列出可用的串口设备',
     async task(ctx, task) {
-      const ports = (await SerialPort.list()).filter(port => port.serialNumber);
+      const ports = await listShells();
       task.title = '';
       for (let i = 0; i < ports.length; i++) {
         task.output = `设备 ${i}: ${ports[i].serialNumber} (路径: ${ports[i].path})`
