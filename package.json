@@ -32,8 +32,8 @@
   "homepage": "https://github.com/LISTENAI/lisa-plugin-btest#readme",
   "dependencies": {
     "@listenai/lisa_core": "^2.0.5",
+    "@oclif/core": "^1.6.0",
     "chalk": "^4.1.2",
-    "cli-ux": "^6.0.9",
     "fs-extra": "^10.0.1",
     "js-yaml": "^4.1.0",
     "serialport": "^10.4.0",

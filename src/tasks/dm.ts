@@ -1,5 +1,5 @@
 import { job } from '@listenai/lisa_core/lib/task';
-import { cli } from 'cli-ux';
+import { CliUx } from '@oclif/core';
 import chalk from 'chalk';
 import UsbDevice from 'usb2xxx';
 
@@ -46,7 +46,7 @@ export default () => {
       }));
 
       task.title = '';
-      cli.table(output, {
+      CliUx.ux.table(output, {
         probe: { header: 'Probe' },
         shell: { header: 'Shell' },
         usb2xxx: { header: 'USB2XXX' },
