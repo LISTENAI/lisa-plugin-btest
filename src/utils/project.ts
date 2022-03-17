@@ -1,8 +1,8 @@
-import { pathExists, readFile } from 'fs-extra';
-import { load } from 'js-yaml';
+import { pathExists, readFile, outputFile } from 'fs-extra';
+import { load, dump } from 'js-yaml';
 import { join } from 'path';
 
-interface Project {
+export interface Project {
   board: string;
   test_command: string;
 }
@@ -14,7 +14,7 @@ export async function readProject(dir: string): Promise<Project | undefined> {
   }
 }
 
-interface Device {
+export interface Device {
   probe: string;
   shell: string;
   usb2xxx: string;
@@ -27,4 +27,9 @@ export async function readDeviceMap(dir: string): Promise<Device[]> {
   } else {
     return [];
   }
+}
+
+export async function writeDeviceMap(dir: string, deviceMap: Device[]): Promise<void> {
+  const path = join(dir, 'device-map.yml');
+  await outputFile(path, dump(deviceMap));
 }
