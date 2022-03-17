@@ -5,8 +5,8 @@ import UsbDevice from 'usb2xxx';
 import { listProbes } from '../utils/pyocd';
 
 export default () => {
-  job('list:ocd', {
-    title: '列出可用的 OCD 调试器',
+  job('list:probe', {
+    title: '列出可用的调试器',
     async task(ctx, task) {
       const probes = await listProbes();
       task.title = '';
@@ -20,7 +20,7 @@ export default () => {
     },
   });
 
-  job('list:serial', {
+  job('list:shell', {
     title: '列出可用的串口设备',
     async task(ctx, task) {
       const ports = (await SerialPort.list()).filter(port => port.serialNumber);

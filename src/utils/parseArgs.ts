@@ -1,3 +1,4 @@
+import LISA from '@listenai/lisa_core';
 import { ParsedArgs } from 'minimist';
 import cli from 'cli-ux';
 
@@ -27,11 +28,12 @@ type ParseArgResult<Fields> = {
   : boolean;
 };
 
-export default function parseArgs<T = ParseArgOptions>(argv: string[] | ParsedArgs, options: T): {
+export default function parseArgs<T = ParseArgOptions>(options: T): {
   args: ParseArgResult<T>;
   printHelp: (usages?: string[]) => void;
 } {
-  const args = argv as ParsedArgs;
+  const { application } = LISA;
+  const args = application.argv as ParsedArgs;
   const result: ParseArgResult<T> = {};
 
   for (const key in options) {
