@@ -1,7 +1,8 @@
 import { job } from '@listenai/lisa_core/lib/task';
 import execa from 'execa';
+import { join } from 'path';
 
-import extendExec from '../utils/extendExec';
+import { FRAMEWORK_DIR } from '../const';
 import { readProject } from '../utils/project';
 import workspace from '../utils/workspace';
 
@@ -24,6 +25,9 @@ export default () => {
 
       await execa(project.test_command, {
         stdio: 'inherit',
+        env: {
+          PYTHONPATH: `${join(FRAMEWORK_DIR, 'python')}:${process.env.PYTHONPATH}`,
+        },
       });
 
       task.title = title;
