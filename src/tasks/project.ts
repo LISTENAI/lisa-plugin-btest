@@ -22,7 +22,11 @@ export default () => {
       }
 
       const exec = extendExec({ task });
-      await exec('lisa', ['zep', 'build', '-b', project.board, join(path, 'firmware')]);
+      await exec('lisa', ['zep', 'build', '-b', project.board, join(path, 'firmware')], {
+        env: {
+          CMAKE_EXPORT_COMPILE_COMMANDS: '1',
+        },
+      });
     },
     options: {
       bottomBar: 5,
