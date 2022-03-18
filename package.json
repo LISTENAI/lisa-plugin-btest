@@ -6,10 +6,12 @@
   "scripts": {
     "build": "tsc -p .",
     "watch": "tsc -p . -w",
+    "install": "node lib/install.js",
     "prepublishOnly": "npm run build"
   },
   "files": [
-    "lib"
+    "lib",
+    "framework"
   ],
   "lisa": {
     "friendlyName": "btest",
