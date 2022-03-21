@@ -4,7 +4,7 @@
 """
 from ctypes import *
 import platform
-from usb_device import *
+from .usb_device import *
 
 # Error code define
 ADC_SUCCESS = 0             # success

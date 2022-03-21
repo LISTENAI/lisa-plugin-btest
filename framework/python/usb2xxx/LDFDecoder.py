@@ -3,8 +3,7 @@
 更多帮助：www.toomoss.com
 """
 from ctypes import *
-import platform
-from usb_device import *
+from .usb_device import *
 from enum import IntEnum
 
 # Define the types we need.

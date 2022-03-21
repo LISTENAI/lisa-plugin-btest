@@ -3,8 +3,7 @@
 更多帮助：www.usbxyz.com
 """
 from ctypes import *
-import platform
-from usb_device import *
+from .usb_device import *
 
 # Error code define
 GPIO_SUCCESS = 0             # success

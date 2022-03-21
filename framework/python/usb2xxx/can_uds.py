@@ -3,8 +3,7 @@
 更多帮助：www.toomoss.com
 """
 from ctypes import *
-import platform
-from usb_device import *
+from .usb_device import *
 
 # CAN UDS地址定义
 class CAN_UDS_ADDR(Structure):

@@ -7,7 +7,6 @@
 from ctypes import *
 import platform
 import os
-import shutil
 
 # Device info define
 class DEVICE_INFO(Structure):

@@ -3,8 +3,7 @@
 更多帮助：www.usbxyz.com
 """
 from ctypes import *
-import platform
-from usb_device import *
+from .usb_device import *
 
 # Error code define
 UART_SUCCESS = 0             # 函数执行成功
