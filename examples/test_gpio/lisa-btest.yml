@@ -1,0 +1,2 @@
+board: csk6001_tester
+test_command: pytest
