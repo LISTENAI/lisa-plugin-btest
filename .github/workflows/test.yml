@@ -1,0 +1,71 @@
+name: test
+
+on: [ push ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      tarball: ${{ steps.build.outputs.tarball }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Build
+        id: build
+        run: npm run build && echo "::set-output name=tarball::$(npm pack)"
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.build.outputs.tarball }}
+          path: ${{ steps.build.outputs.tarball }}
+
+  test:
+    needs: build
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        node: ['14', '16']
+
+    steps:
+      - name: Set up Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Update node-gyp for Node.js 14 on Windows
+        if: matrix.os == 'windows-latest' && matrix.node == '14'
+        run: |
+          $node_path = Get-Command node | Select-Object -ExpandProperty Source | Split-Path
+          cd "$node_path\node_modules\npm\node_modules\npm-lifecycle"
+          npm install node-gyp@latest
+
+      - name: Download tarball
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ needs.build.outputs.tarball }}
+
+      - name: Install @listenai/lisa
+        run: npm install -g @listenai/lisa && lisa login --token ${{ secrets.LS_ACCESS_TOKEN }}
+
+      - name: Install @lisa-plugin/btest
+        run: lisa install -g ${{ needs.build.outputs.tarball }}
+
+      - name: Test list:shell
+        run: lisa btest list:shell
+
+      - name: Test list:usb2xxx
+        run: lisa btest list:usb2xxx
