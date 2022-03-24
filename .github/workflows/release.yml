@@ -1,0 +1,26 @@
+name: release
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - uses: battila7/get-version-action@v2
+        id: get_version
+
+      - name: LPM publish (latest)
+        run: |
+          npm config set //registry-lpm.listenai.com/:_password ${{ secrets.LPM_ADMIN_TOKEN }}
+          npm config set //registry-lpm.listenai.com/:username lpmadmin
+          npm config set //registry-lpm.listenai.com/:email lpm.admin@listenai.com
+          npm config set //registry-lpm.listenai.com/:always-auth true
+          npm dist-tag add @lisa-plugin/btest@${{ steps.get_version.outputs.version-without-v }} latest --registry=https://registry-lpm.listenai.com
