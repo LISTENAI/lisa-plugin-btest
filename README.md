@@ -18,7 +18,6 @@ lisa install -g @lisa-plugin/btest
 #### Windows
 
 * Windows 10 或以上，x86_64 或 ARM
-* [Visual Studio Build Tools](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools) (至少选中 MSVC 及 Windows 10 SDK)
 
 #### Linux
 

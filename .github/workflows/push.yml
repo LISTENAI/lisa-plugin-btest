@@ -46,13 +46,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Update node-gyp for Node.js 14 on Windows
-        if: matrix.os == 'windows-latest' && matrix.node == '14'
-        run: |
-          $node_path = Get-Command node | Select-Object -ExpandProperty Source | Split-Path
-          cd "$node_path\node_modules\npm\node_modules\npm-lifecycle"
-          npm install node-gyp@latest
-
       - name: Download tarball
         uses: actions/download-artifact@v2
         with:
