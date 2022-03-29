@@ -4,7 +4,7 @@ import { join } from 'path';
 import extendExec from '../utils/extendExec';
 import parseArgs from '../utils/parseArgs';
 import { readDeviceMap, readProject } from '../utils/project';
-import { listProbes } from '../utils/cmsis-dap';
+import { listProbes } from '../utils/pyocd';
 import workspace from '../utils/workspace';
 
 export default () => {
