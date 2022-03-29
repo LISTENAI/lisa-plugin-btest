@@ -1,7 +1,7 @@
 import { job } from '@listenai/lisa_core/lib/task';
 import UsbDevice from 'usb2xxx';
 
-import { listProbes } from '../utils/pyocd';
+import { listProbes } from '../utils/cmsis-dap';
 import { listShells } from '../utils/shell';
 
 export default () => {

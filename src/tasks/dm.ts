@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import UsbDevice from 'usb2xxx';
 
 import { readDeviceMap, Device, writeDeviceMap } from '../utils/project';
-import { listProbes, Probe } from '../utils/pyocd';
+import { listProbes, Probe } from '../utils/cmsis-dap';
 import { listShells, Shell } from '../utils/shell';
 import workspace from '../utils/workspace';
 
@@ -55,6 +55,7 @@ export default () => {
       const newMap: Device[] = [];
 
       const probes = await getProbeMap();
+      console.log(probes);
       if (Object.keys(probes).length == 0) {
         throw new Error(`没有找到已连接的调试器`);
       }

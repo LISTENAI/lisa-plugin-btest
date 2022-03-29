@@ -57,6 +57,9 @@ jobs:
       - name: Install @lisa-plugin/btest
         run: lisa install -g ${{ needs.build.outputs.tarball }}
 
+      - name: Test list:probe
+        run: lisa btest list:probe
+
       - name: Test list:shell
         run: lisa btest list:shell
 
