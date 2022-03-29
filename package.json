@@ -11,6 +11,7 @@
   },
   "files": [
     "lib",
+    "scripts",
     "framework"
   ],
   "lisa": {
