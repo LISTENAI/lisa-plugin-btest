@@ -3,6 +3,7 @@ import execa from 'execa';
 import { join } from 'path';
 
 import { FRAMEWORK_DIR } from '../const';
+import { alterPathFromEnv } from '../utils/path';
 import { readProject } from '../utils/project';
 import workspace from '../utils/workspace';
 
@@ -26,7 +27,7 @@ export default () => {
       await execa(project.test_command, {
         stdio: 'inherit',
         env: {
-          PYTHONPATH: `${join(FRAMEWORK_DIR, 'python')}:${process.env.PYTHONPATH}`,
+          ...alterPathFromEnv('PYTHONPATH', join(FRAMEWORK_DIR, 'python')),
         },
       });
 
