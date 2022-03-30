@@ -29,7 +29,8 @@ def load_device_map(file):
 def load_devices(device_map):
     devices = load_device_map(device_map)
     probes = {p.unique_id for p in list_probes()}
-    shells = {s.serial_number for s in list_shells()}
+    shells = {s.serial_number.lower()
+              for s in list_shells() if s.serial_number}
     adapters = set(list_usb2xxx())
     return [
         {
@@ -39,7 +40,7 @@ def load_devices(device_map):
         }
         for i in devices
         if i['probe'] in probes
-        and i['shell'] in shells
+        and i['shell'].lower() in shells
         and int(i['usb2xxx']) in adapters
     ]
 
@@ -47,7 +48,7 @@ def load_devices(device_map):
 def shell_open(id):
     shells = list_shells()
     for s in shells:
-        if s.serial_number == id:
+        if s.serial_number and s.serial_number.lower() == id.lower():
             port = serial_for_url(s.device)
             port.baudrate = 115200
             return port
