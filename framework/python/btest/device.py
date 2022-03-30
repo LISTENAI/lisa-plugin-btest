@@ -45,12 +45,12 @@ def load_devices(device_map):
     ]
 
 
-def shell_open(id):
+def shell_open(id, baudrate=115200):
     shells = list_shells()
     for s in shells:
         if s.serial_number and s.serial_number.lower() == id.lower():
             port = serial_for_url(s.device)
-            port.baudrate = 115200
+            port.baudrate = baudrate
             return port
     return None
 

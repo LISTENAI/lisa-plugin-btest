@@ -144,11 +144,12 @@ BTEST_MODULE(gpio,
 
 从 `path` 加载 `device-map.yml`。`device-map.yml` 可通过 `lisa btest dm:init` 生成。
 
-#### `device.shell_open(id)`
+#### `device.shell_open(id, baudrate=115200)`
 
 开启一个串口 shell。
 
 - `id` - 该串口设备的序列号，串口设备应当已在 `device-map.yml` 中定义并连接到主机上。通过 `lisa btest dm:show` 可查看当前已定义的设备映射状态，通过 `lisa btest list:shell` 获得所有已连接的串口设备
+- `baudrate` - 串口设备的波特率，不传默认 `115200`
 
 返回值：成功返回 shell 实例，失败返回 `None`
 
