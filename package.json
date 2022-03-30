@@ -44,7 +44,6 @@
     "usb2xxx": "^1.0.0-alpha.7"
   },
   "devDependencies": {
-    "@types/execa": "^2.0.0",
     "@types/inquirer": "^8.2.0",
     "@types/js-yaml": "^4.0.5",
     "@types/minimist": "^1.2.2",
