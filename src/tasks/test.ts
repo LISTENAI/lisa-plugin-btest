@@ -24,7 +24,7 @@ export default () => {
       const title = task.title;
       task.title = '';
 
-      await execa(project.test_command, {
+      await execa.command(project.test_command, {
         stdio: 'inherit',
         env: {
           ...alterPathFromEnv('PYTHONPATH', join(FRAMEWORK_DIR, 'python')),
