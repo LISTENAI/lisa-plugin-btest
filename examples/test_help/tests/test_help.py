@@ -14,7 +14,7 @@ def connected_device():
 
 def test_help(connected_device):
     (shell) = connected_device
-    shell_exec(shell, 'help')
-    assert shell_match(shell, 'Available commands:',
+    shell.exec('help')
+    assert shell.match('Available commands:',
                        full_match=True) is not None
-    assert shell_match(shell, 'Prints the help message.') is not None
+    assert shell.match('Prints the help message.') is not None
