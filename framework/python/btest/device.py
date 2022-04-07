@@ -1,9 +1,7 @@
-from parse import parse
 from ctypes import *
 from pyocd.core.helpers import ConnectHelper
-from serial import serial_for_url
-from serial.tools import list_ports
 from usb2xxx import usb_device
+from . import shell as _shell
 import yaml
 
 
@@ -12,7 +10,7 @@ def list_probes():
 
 
 def list_shells():
-    return list_ports.comports()
+    return _shell.shell_list()
 
 
 def list_usb2xxx():
@@ -33,22 +31,12 @@ def load_devices(device_map):
 
 
 def shell_open(id, baudrate=115200):
-    shells = list_shells()
-    for s in shells:
-        if s.serial_number and s.serial_number.lower() == id.lower():
-            port = serial_for_url(s.device)
-            port.baudrate = baudrate
-            return port
-    return None
+    return _shell.shell_open(id, baudrate)
 
 
 def shell_cmd(shell, module, cmd, args, wait=False):
-    shell.write(bytes("test_%s %s %s\n" %
-                (module, cmd, args), encoding='utf-8'))
+    _shell.shell_exec(shell, 'test_%s %s %s' % (module, cmd, args))
     if wait:
-        while True:
-            read = str(shell.readline(), 'utf-8').strip()
-            if read.startswith('DONE:'):
-                p = parse('DONE:{}', read)
-                return int(p[0])
+        p = _shell.shell_match(shell, 'DONE:{}', full_match=True)
+        return int(p[0])
     return 0
