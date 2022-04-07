@@ -25,7 +25,7 @@ def connected_device():
     devices = device.load_devices('device-map.yml')
     assert len(devices) > 0
 
-    usb = devices[0]['usb2xxx']
+    usb = int(devices[0]['usb2xxx'])
     USB_OpenDevice(usb)
 
     shell = device.shell_open(devices[0]['shell'])

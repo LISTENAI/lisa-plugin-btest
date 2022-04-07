@@ -28,8 +28,8 @@ class Shell:
     def close(self):
         self.serial.close()
 
-    def exec(self, cmd):
-        self.serial.write(bytes('%s\n' % cmd, encoding='utf-8'))
+    def exec(self, cmd, end='\n'):
+        self.serial.write(bytes('%s%s' % (cmd, end), encoding='utf-8'))
         self.serial.flush()
 
     def match(self, format, full_match=False, strip=True):

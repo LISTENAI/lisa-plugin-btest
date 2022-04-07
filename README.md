@@ -1,5 +1,7 @@
-LISA B-Test Plugin
+LISA B-Test Plugin [![test](https://github.com/LISTENAI/lisa-plugin-btest/actions/workflows/push.yml/badge.svg)](https://github.com/LISTENAI/lisa-plugin-btest/actions/workflows/push.yml)
 ==========
+
+[![lpm-img]][lpm-url] [![issues][issues-img]][issues-url] [![stars][stars-img]][stars-url] [![commits][commits-img]][commits-url]
 
 ## 安装
 
@@ -29,18 +31,21 @@ lisa install -g @lisa-plugin/btest
 
 ## 概述
 
-LISA B-Test 是一套用于对硬件进行行为测试的工作流。它基于业界常用测试框架 (目前支持 pytest)，利用 shell 调起测试固件中的对应功能，通过 usb2xxx 探测被测硬件的输出，对固件的行为进行断言。
+LISA B-Test 是一套用于对硬件进行行为测试的工作流。它基于业界常用测试框架 (目前支持 pytest)，利用 shell 调起测试固件中的对应功能，对固件的输出行为进行断言。
 
 ![](doc/test-flow.png)
 
-待测硬件、调试器 (目前支持 DAPLink)、适配器 (目前支持 USB2XXX) 三者组成了一个测试套件。待测硬件与适配器应当根据测试需求进行接线，以便读取需要被断言的输出；调试器同时承担了程序烧录与串口 shell 的功能。
+待测硬件与调试器 (目前支持 DAPLink) 二者组成了一个最小的测试套件。调试器同时承担了程序烧录与串口 shell 的功能。
+
+可选地，本框架还支持关联外部适配器 (目前支持 [USB2XXX](http://www.toomoss.com/product/1-cn.html)) 读取待测硬件的输出信号，针对输出电平进行断言。
 
 在一台主机上可同时接入多套测试套件，用于运行不同的测试工程。测试工程目录下的 `device-map.yml` 记录了测试工程与测试套件、套件中待测硬件、调试器、适配器的对应关系。可通过 `lisa btest dm:show` 显示，也可通过 `lisa btest dm:init` 生成。
 
-测试工程可参照 [examples/test_gpio](examples/test_gpio/)。一个简要的测试工程结构如下：
+## 工程结构
+
+一个最简化的测试工程可参照 [examples/test_help](examples/test_help/)。该工程结构如下：
 
 ```
-|- firmware           测试固件，是一个标准的 Zephyr App 项目
 |- tests              测试用例，是一个标准的 pytest 项目
 |- device-map.yml     测试设备映射，通过 lisa btest dm:init 生成
 \- lisa-btest.yml     测试工程配置
@@ -49,11 +54,28 @@ LISA B-Test 是一套用于对硬件进行行为测试的工作流。它基于�
 其中 `lisa-btest.yml` 示例如下：
 
 ```yml
-board: csk6001_tester   # 编译测试固件时所用的 --board
 test_command: pytest    # 测试命令，如使用 pytest 则是 pytest
 ```
 
-通过 `lisa btest proj:build` 和 `lisa btest proj:flash` 可编译测试固件并烧录到硬件中；通过 `lisa btest run` 可运行测试。
+该工程假定你的设备已经烧录了待测固件，通过 `lisa btest run` 即可运行测试。
+
+此外，在某些更复杂的测试场景下，你可能需要编写额外的测试固件。你可以参照 [examples/test_gpio](examples/test_gpio/) 将固件源码也放到测试工程里维护。结构如下：
+
+```
+|- firmware           测试固件，是一个标准的 Zephyr App 项目
+|- tests              测试用例，是一个标准的 pytest 项目
+|- device-map.yml     测试设备映射，通过 lisa btest dm:init 生成
+\- lisa-btest.yml     测试工程配置
+```
+
+对应的 `lisa-btest.yml` 如下：
+
+```yml
+board: csk6002_c3_nano  # 编译测试固件时所用的 --board
+test_command: pytest    # 测试命令，如使用 pytest 则是 pytest
+```
+
+通过 `lisa btest proj:build` 和 `lisa btest proj:flash` 可编译测试固件并烧录到硬件中。
 
 ## 快速上手
 
@@ -70,15 +92,11 @@ npm install -g @listenai/lisa
 lisa install -g @lisa-plugin/btest
 
 # 进入本仓库的 example，并安装 pytest 及所需的 python 包
-cd examples/test_gpio
+cd examples/test_help
 pip install -r requirements.txt
 
 # 连接好设备，并生成设备映射
 lisa btest dm:init
-
-# 编译测试工程，并烧录到设备中
-lisa btest proj:build
-lisa btest proj:flash
 
 # 运行测试
 lisa btest run
@@ -97,72 +115,58 @@ lisa btest list:shell     # 列出可用的串口设备
 lisa btest list:usb2xxx   # 列出可用的 USB2XXX 设备
 ```
 
-## API
+## Python API
 
-### 固件 (Zephyr)
+### 模块: `device`
 
-本框架提供了一些预定义的宏 (`BTEST_*`) 可方便测试固件的开发。示例如下：
-
-```c
-#include <btest/btest.h>
-
-static int
-cmd_gpio_set(const struct shell *shell, size_t argc, char **argv)
-{
-  // 从 argc 和 argv 可取得传入参数
-  // 执行对应的测试逻辑…
-  BTEST_RETURN(shell, 0)
-}
-
-BTEST_MODULE(gpio,
-  BTEST_CMD(set, "Set GPIO", cmd_gpio_set),
-  BTEST_CMD_END);
-```
-
-#### `BTEST_MODULE(module_name, cmds..., BTEST_CMD_END)`
-
-定义一个测试模块。一个固件可包含多个模块，以便复用同一测试套件进行不同功能的测试。
-
-- `module_name` - 测试模块的名称，不可带空格
-- `cmds` - 使用 `BTEST_CMD` 定义的指令
-
-#### `BTEST_CMD(cmd_name, help_text, handler_func)`
-
-定义一个测试指令。一个模块可包含多个指令。
-
-- `cmd_name` - 指令名，不可带空格
-- `help_text` - 指令的说明，字符串
-- `handler_func` - 该指令所调用的函数
-
-#### `BTEST_RETURN(shell, code)`
-
-- `code` 指令返回码。约定小于 0 为失败，大于或等于 0 为正常。测试用例可根据需要使用不同的正整数来表达不同含义
-
-### Python
-
-#### `device.load_devices(path)`
+#### `load_devices(path)`
 
 从 `path` 加载 `device-map.yml`。`device-map.yml` 可通过 `lisa btest dm:init` 生成。
 
-#### `device.shell_open(id, baudrate=115200)`
+### 模块: `shell`
+
+#### `shell_open(id, baudrate=115200, log_to=None)`
 
 开启一个串口 shell。
 
 - `id` - 该串口设备的序列号，串口设备应当已在 `device-map.yml` 中定义并连接到主机上。通过 `lisa btest dm:show` 可查看当前已定义的设备映射状态，通过 `lisa btest list:shell` 获得所有已连接的串口设备
 - `baudrate` - 串口设备的波特率，不传默认 `115200`
+- `log_to` - 将串口返回写入到指定的 `io` (如 `sys.stdout`)，不传默认 `None`
 
-返回值：成功返回 shell 实例，失败返回 `None`
+返回值：成功返回 `Shell` 实例，失败返回 `None`
 
-#### `device.shell_cmd(shell, module_name, cmd_name, args, wait=False`
+#### `Shell.exec(cmd, end='\n')`
 
-向设备发送测试指令。
+向设备发送指令。
 
-- `module_name` - 测试模块名称，由固件中的 `BTEST_MODULE` 定义
-- `cmd_name` - 测试指令名称，由固件中的 `BTEST_CMD` 定义
-- `args` - 指令参数，字符串，以空格分隔
-- `wait` - 是否等待指令返回，返回值由固件中的 `BTEST_RETURN` 定义
+- `cmd` - 命令字符串
+- `end` - 命令结束符，不传默认 `\n`
 
-返回值：若 `wait` 为 `True` 则返回指令的返回值；若 `False` 则返回 `0`
+#### `Shell.match(format, full_match=False, strip=True)`
+
+持续按行读取设备返回，直到匹配到复合 `format` 的输出。
+
+- `format` - 匹配字符串，支持使用 `{}` 提取片段
+- `full_match` - 是否全匹配，不传默认 `False` 等效于 `parse.search`，为 `True` 等效于 `parse.parse`
+- `strip` - 匹配前是否删除输出行的首末空白字符 (含 `\r` 和 `\n`)，不传默认 `True`
+
+#### `Shell.close()`
+
+关闭 Shell。
+
+### 模块: `utils`
+
+#### `logfile(dir, prefix)`
+
+快速生成一个日志文件并打开。可配合 `shell_open` 使用：
+
+```py
+log = logfile('./logs', __name__)
+shell = shell_open('/dev/ttyUSB0', log_to=log)
+```
+
+- `dir` - 日志目录
+- `prefix` - 日志文件前缀
 
 ## 配置
 
@@ -176,3 +180,12 @@ BTEST_MODULE(gpio,
 - `probe` - 调试器的序列号，可通过 `lisa btest list:probe` 获得
 - `shell` - 串口设备的序列号，可通过 `lisa btest list:shell` 获得
 - `usb2xxx` - USB2XXX 适配器的序列号，可通过 `lisa btest list:usb2xxx` 获得
+
+[lpm-img]: https://img.shields.io/badge/dynamic/json?style=flat-square&label=lpm&color=green&query=latestVersion&url=https%3A%2F%2Flpm.listenai.com%2Fapi%2Fcloud%2Fpackages%2Fdetail%3Fname%3D%40lisa-plugin%2Fbtest
+[lpm-url]: https://lpm.listenai.com/lpm/info/?keyword=%40lisa-plugin%2Fbtest
+[issues-img]: https://img.shields.io/github/issues/LISTENAI/lisa-plugin-btest?style=flat-square
+[issues-url]: https://github.com/LISTENAI/lisa-plugin-btest/issues
+[stars-img]: https://img.shields.io/github/stars/LISTENAI/lisa-plugin-btest?style=flat-square
+[stars-url]: https://github.com/LISTENAI/lisa-plugin-btest/stargazers
+[commits-img]: https://img.shields.io/github/last-commit/LISTENAI/lisa-plugin-btest?style=flat-square
+[commits-url]: https://github.com/LISTENAI/lisa-plugin-btest/commits/master
