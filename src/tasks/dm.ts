@@ -63,42 +63,44 @@ export default () => {
       const adapters = await getAdapterMap();
 
       for (const probe of Object.keys(probes)) {
-        if (Object.keys(shells).length == 0 || Object.keys(adapters).length == 0) {
-          break;
+        const device: Device = { probe };
+        while (true) {
+          let { action } = await prompt([{
+            type: 'list',
+            name: 'action',
+            message: `为调试器 ${probes[probe].vendor_name} ${probes[probe].product_name} (${probes[probe].unique_id}) 配置设备映射`,
+            choices: [
+              { name: '绑定一个 Shell', value: 'shell' },
+              { name: '绑定一个 USB2XXX', value: 'usb2xxx' },
+              { name: '完成', value: undefined },
+            ],
+          }]);
+          if (!action) break;
+
+          if (action == 'shell') {
+            const { shell } = await prompt([{
+              type: 'list',
+              name: 'shell',
+              message: `选择调试器所对应的 Shell 设备`,
+              choices: Object.keys(shells).map((shell) => ({
+                name: `${shells[shell].path} (${shell})`,
+                value: shell,
+              })),
+            }]);
+            device.shell = shell;
+          } else if (action == 'usb2xxx') {
+            const { usb2xxx } = await prompt([{
+              type: 'list',
+              name: 'usb2xxx',
+              message: `选择调试器所对应的 USB2XXX 设备`,
+              choices: Object.keys(adapters),
+            }]);
+            device.usb2xxx = usb2xxx;
+          }
+
+          if (device.shell && device.usb2xxx) break;
         }
-
-        const { skip } = await prompt([{
-          type: 'list',
-          name: 'skip',
-          message: `为调试器 ${probes[probe].vendor_name} ${probes[probe].product_name} (${probes[probe].unique_id}) 配置设备映射`,
-          choices: [
-            { name: '选择设备', value: false },
-            { name: '跳过', value: true },
-          ],
-        }]);
-        if (skip) continue;
-
-        const { shell, usb2xxx } = await prompt([
-          {
-            type: 'list',
-            name: 'shell',
-            message: `选择调试器所对应的 Shell 设备`,
-            choices: Object.keys(shells).map((shell) => ({
-              name: `${shells[shell].path} (${shell})`,
-              value: shell,
-            })),
-          },
-          {
-            type: 'list',
-            name: 'usb2xxx',
-            message: `选择调试器所对应的 USB2XXX 设备`,
-            choices: Object.keys(adapters),
-          },
-        ]);
-
-        newMap.push({ probe, shell, usb2xxx });
-        delete shells[shell];
-        delete adapters[usb2xxx];
+        newMap.push(device);
       }
 
       await printMapTable(newMap);
@@ -156,8 +158,8 @@ async function printMapTable(deviceMap: Device[]): Promise<void> {
 
   const output = deviceMap.map(({ probe, shell, usb2xxx }) => ({
     probe: formatItem(probe, !!probes[probe], () => `${probes[probe].vendor_name} ${probes[probe].product_name}`),
-    shell: formatItem(shell, !!shells[shell], () => `${shells[shell].path}`),
-    usb2xxx: formatItem(usb2xxx, !!adapters[usb2xxx], () => ''),
+    shell: shell ? formatItem(shell, !!shells[shell], () => `${shells[shell].path}`) : chalk.gray('未绑定'),
+    usb2xxx: usb2xxx ? formatItem(usb2xxx, !!adapters[usb2xxx], () => '') : chalk.gray('未绑定'),
   }));
 
   CliUx.ux.table(output, {

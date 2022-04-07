@@ -29,20 +29,7 @@ def load_device_map(file):
 def load_devices(device_map):
     devices = load_device_map(device_map)
     probes = {p.unique_id for p in list_probes()}
-    shells = {s.serial_number.lower()
-              for s in list_shells() if s.serial_number}
-    adapters = set(list_usb2xxx())
-    return [
-        {
-            'probe': str(i['probe']),
-            'shell': str(i['shell']),
-            'usb2xxx': int(i['usb2xxx'])
-        }
-        for i in devices
-        if i['probe'] in probes
-        and i['shell'].lower() in shells
-        and int(i['usb2xxx']) in adapters
-    ]
+    return [i for i in devices if i['probe'] in probes]
 
 
 def shell_open(id, baudrate=115200):
