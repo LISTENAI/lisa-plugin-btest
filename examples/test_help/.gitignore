@@ -6,3 +6,5 @@ __pycache__
 /device-map.yml
 
 build
+
+/logs
