@@ -1,13 +1,14 @@
 import pytest
 from btest import device
 from btest.shell import *
+import sys
 
 
 @pytest.fixture
 def connected_device():
     devices = device.load_devices('device-map.yml')
     assert len(devices) > 0
-    shell = shell_open(devices[0]['shell'])
+    shell = shell_open(devices[0]['shell'], log_to=sys.stdout)
     yield (shell)
     shell.close()
 
