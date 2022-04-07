@@ -1,2 +1,2 @@
-board: csk6001_tester
-test_command: pytest
+board: csk6002_c3_nano
+test_command: pytest -s
