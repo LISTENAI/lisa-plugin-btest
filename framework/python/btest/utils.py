@@ -12,4 +12,4 @@ def logfile(dir, name):
     )
     path = Path(dir, filename)
     path.parent.mkdir(parents=True, exist_ok=True)
-    return open(path, 'w')
+    return open(path,'w',encoding='utf-8')
