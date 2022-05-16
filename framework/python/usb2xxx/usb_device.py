@@ -49,6 +49,8 @@ def USB_ScanDevice(pDevHandle):
 
 # Open device
 def USB_OpenDevice(DevHandle):
+    a = (c_int * 20)()
+    USB2XXXLib.USB_ScanDevice(a)
     return USB2XXXLib.USB_OpenDevice(DevHandle)
 
 # Reset device
