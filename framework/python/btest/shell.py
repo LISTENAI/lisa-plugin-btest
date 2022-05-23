@@ -41,52 +41,42 @@ class Shell:
         self.serial.write(bytes('%s%s' % (cmd, end), encoding='utf-8'))
         self.serial.flush()
 
-
-    def match(self, format, full_match=False, strip=True,timeout=10):
+    def match(self, format, full_match=False, strip=True, timeout=10, debug=False):
         time_start = time.time()
 
         while True:
-
-            time_end =time.time()
-            time_cha = time_end-time_start
-
             r = str(self.serial.readline(), 'utf-8')
-            print(f'串口日志{r}')
+            if debug: print(f'串口日志: {r}')
             if self.log_to is not None:
                 self.log_to.write(r)
 
             r = r.strip() if strip else r
             m = parse(format, r) if full_match else search(format, r)
             if m is not None:
-                print(f'期望值已经找到{m}')
+                if debug: print(f'期望值已经找到: {m}')
                 return m
             else:               # 若没找到则设置超时时间，到了超时时间未找到则退出
-                if time_cha > timeout:
-                    print('超时时间到了')
-                # print(time.time()-time_start)
+                if timeout != -1 and time.time() - time_start > timeout:
+                    if debug: print('超时时间到了: ' + time.time() - time_start)
                     break
-    def get_logfile(self, format, full_match=False, strip=True,timeout=10):
-        time_start = time.time()
+    
 
+    def get_logfile(self, debug=False):
         while True:
-
-            time_end =time.time()
-            time_cha = time_end-time_start
 
             r = str(self.serial.readline(), 'utf-8')
             if r == '':
                 break
-            print(f'串口日志{r}')
+            if debug: print(f'串口日志: {r}')
             if self.log_to is not None:
                 self.log_to.write(r)
 
 
-
-    def read(self, strip=True):
+    def read(self, debug=False):
         text_str = ''
         for i in range(100):
             n = self.serial.inWaiting()
             if n:
                 text_str += str(self.serial.readline(), 'utf-8')
-                print(f'text_str的值为{text_str}')
+                if debug: print(f'text_str的值为: {text_str}')
         return text_str
