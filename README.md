@@ -173,7 +173,10 @@ shell = shell_open('/dev/ttyUSB0', log_to=log)
 ### `lisa-btest.yml`
 
 - `board` - 测试硬件板型，对应 `lisa zep build` 或 `west build` 的 `--board` 参数
-- `test_command` - 测试命令 (如 `pytest`)，由 `lisa btest run` 执行
+- `test_command` - 测试命令 (如 `pytest`)，由 `lisa btest run` 执行。若需要在不同平台下使用不同命令，可加上后缀：
+  * `test_command:win32`: Windows
+  * `test_command:linux`: Linux
+  * `test_command:darwin`: macOS
 
 ### `device-map.yml`
 
