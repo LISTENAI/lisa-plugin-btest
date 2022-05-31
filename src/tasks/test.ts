@@ -29,7 +29,8 @@ export default () => {
 
       const project = await readProject(path, configPath);
       if (!project) {
-        throw new Error(`该目录不是一个 lisa-btest 项目: ${path}`);
+        throw new Error(`该目录不是一个 lisa-btest 项目: ${path}\n` +
+          '如果lisa-btest.yml位于其他路径，请使用 --with-config="{lisa-btest.yml路径}" 参数指定。');
       }
       const commands = forceCast(project) as Record<`test_command:${typeof process.platform}`, string>;
       const test_command = commands[`test_command:${process.platform}`] ?? project.test_command;
