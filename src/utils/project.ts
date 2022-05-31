@@ -1,15 +1,17 @@
 import { pathExists, readFile, outputFile } from 'fs-extra';
 import { load, dump } from 'js-yaml';
-import { join, resolve } from 'path';
 
 export interface Project {
   board: string;
   test_command: string;
 }
 
-export async function readProject(dir: string, configPath?: string): Promise<Project | undefined> {
-  let path = typeof configPath !== 'undefined' ?
-      resolve(configPath) : join(dir, 'lisa-btest.yml');
+/**
+ * read project config from path
+ * @param dir lisa-btest.yml path
+ */
+export async function readProject(dir: string): Promise<Project | undefined> {
+  const path = dir;
 
   if (await pathExists(path)) {
     return load(await readFile(path, 'utf-8')) as Project;
@@ -22,9 +24,12 @@ export interface Device {
   usb2xxx?: string;
 }
 
-export async function readDeviceMap(dir: string, devMapPath?: string): Promise<Device[]> {
-  let path = typeof devMapPath !== 'undefined' ?
-      resolve(devMapPath) : join(dir, 'device-map.yml');
+/**
+ * read device map from file
+ * @param dir device map file path
+ */
+export async function readDeviceMap(dir: string): Promise<Device[]> {
+  const path = dir;
 
   if (await pathExists(path)) {
     return load(await readFile(path, 'utf-8')) as Device[];
@@ -33,7 +38,12 @@ export async function readDeviceMap(dir: string, devMapPath?: string): Promise<D
   }
 }
 
+/**
+ * write device map to file
+ * @param dir destination path
+ * @param deviceMap device map
+ */
 export async function writeDeviceMap(dir: string, deviceMap: Device[]): Promise<void> {
-  const path = join(dir, 'device-map.yml');
+  const path = dir;
   await outputFile(path, dump(deviceMap));
 }

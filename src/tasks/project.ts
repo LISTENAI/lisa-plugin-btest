@@ -11,7 +11,16 @@ export default () => {
   job('proj:build', {
     title: '构建测试固件',
     async task(ctx, task) {
-      const path = workspace();
+      const { args, printHelp } = parseArgs({
+        'with-config': { short: 'c', arg: 'with-config', help: '指定lisa-btest.yml所在路径' },
+        'task-help': { short: 'h', help: '打印帮助' },
+      });
+
+      if (args['task-help']) {
+        return printHelp();
+      }
+
+      const path = args['with-config'] ?? workspace();
 
       const project = await readProject(path);
       if (!project) {
@@ -37,6 +46,7 @@ export default () => {
     title: '烧录测试固件',
     async task(ctx, task) {
       const { args, printHelp } = parseArgs({
+        'with-device-map': { short: 'd', arg: 'with-device-map', help: '指定device-map.yml所在路径' },
         'probe': { short: 'p', arg: 'id', help: '指定烧录所用调试器 (使用逗号 "," 间隔，缺省烧录 device-map.yml 中已定义且已连接的全部调试器)' },
         'task-help': { short: 'h', help: '打印帮助' },
       });
@@ -44,7 +54,7 @@ export default () => {
         return printHelp();
       }
 
-      const path = workspace();
+      const path = args['with-device-map'] ?? workspace();
 
       const definedProbes = (await readDeviceMap(path)).map(({ probe }) => probe);
       if (definedProbes.length == 0) {

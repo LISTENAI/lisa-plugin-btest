@@ -8,6 +8,8 @@ import { readDeviceMap, Device, writeDeviceMap } from '../utils/project';
 import { listProbes, Probe } from '../utils/pyocd';
 import { listShells, Shell } from '../utils/shell';
 import workspace from '../utils/workspace';
+import parseArgs from "../utils/parseArgs";
+import {join, resolve} from "path";
 
 export default () => {
   job('dm:show', {
@@ -35,14 +37,23 @@ export default () => {
     async task(ctx, task) {
       task.title = '';
 
-      const path = workspace();
+      const { args, printHelp } = parseArgs({
+        'path': { short: 'd', arg: 'path', help: '指定device-map.yml所在路径' },
+        'task-help': { short: 'h', help: '打印帮助' },
+      });
+
+      if (args['task-help']) {
+        return printHelp();
+      }
+
+      const path = resolve(args['path'] ?? join(workspace(), 'device-map.yml'));
 
       const deviceMap = await readDeviceMap(path);
       if (deviceMap.length > 0) {
         const { overwrite } = await prompt([{
           type: 'confirm',
           name: 'overwrite',
-          message: 'device-map.yml 已存在，要覆盖它吗？',
+          message: `${path} 已存在，要覆盖它吗？`,
           default: false,
         }]);
 
@@ -107,7 +118,7 @@ export default () => {
       const { save } = await prompt([{
         type: 'confirm',
         name: 'save',
-        message: '要将上述结果保存到 device-map.yml 吗？',
+        message: `要将上述结果保存到 ${path} 吗？`,
         default: true,
       }]);
       if (save) {
