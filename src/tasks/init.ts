@@ -1,5 +1,5 @@
 import { job } from '@listenai/lisa_core/lib/task';
-import { join, isAbsolute } from 'path';
+import { join, resolve } from 'path';
 import { mkdirpSync, cpSync, existsSync } from "fs-extra";
 
 import parseArgs from '../utils/parseArgs';
@@ -23,7 +23,7 @@ export default () => {
             const projPath = workspace();
             let btestPath = projPath;
             if (args['prefix']) {
-                btestPath = isAbsolute(args['prefix']) ? args['prefix'] : join(projPath, args['prefix']);
+                btestPath = resolve(args['prefix']);
             }
 
             //check if test-case folder already exists

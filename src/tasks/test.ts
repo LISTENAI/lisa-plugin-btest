@@ -7,14 +7,27 @@ import { alterPathFromEnv } from '../utils/path';
 import { readProject } from '../utils/project';
 import { forceCast } from '../utils/typing';
 import workspace from '../utils/workspace';
+import parseArgs from "../utils/parseArgs";
 
 export default () => {
   job('run', {
     title: '运行测试',
     async task(ctx, task) {
+      const { args, printHelp } = parseArgs({
+        //'with-device-map': { short: 'd', arg: 'with-device-map', help: '指定device-map.yml所在路径' },
+        'with-config': { short: 'c', arg: 'with-config', help: '指定lisa-btest.yml所在路径' },
+        'task-help': { short: 'h', help: '打印帮助' },
+      });
+
+      if (args['task-help']) {
+        return printHelp();
+      }
+
+      const configPath = args['with-config'];
+
       const path = workspace();
 
-      const project = await readProject(path);
+      const project = await readProject(path, configPath);
       if (!project) {
         throw new Error(`该目录不是一个 lisa-btest 项目: ${path}`);
       }
