@@ -1,15 +1,15 @@
 import { pathExists, readFile, outputFile } from 'fs-extra';
 import { load, dump } from 'js-yaml';
 import { join, resolve } from 'path';
+import { lstatSync } from 'fs';
 
 export interface Project {
   board: string;
   test_command: string;
 }
 
-export async function readProject(dir: string, configPath?: string): Promise<Project | undefined> {
-  let path = typeof configPath !== 'undefined' ?
-      resolve(configPath) : join(dir, 'lisa-btest.yml');
+export async function readProject(dir: string): Promise<Project | undefined> {
+  const path = lstatSync(dir).isDirectory() ? join(dir, 'lisa-btest.yml') : dir;
 
   if (await pathExists(path)) {
     return load(await readFile(path, 'utf-8')) as Project;
@@ -22,9 +22,8 @@ export interface Device {
   usb2xxx?: string;
 }
 
-export async function readDeviceMap(dir: string, devMapPath?: string): Promise<Device[]> {
-  let path = typeof devMapPath !== 'undefined' ?
-      resolve(devMapPath) : join(dir, 'device-map.yml');
+export async function readDeviceMap(dir: string): Promise<Device[]> {
+  const path = lstatSync(dir).isDirectory() ? join(dir, 'device-map.yml') : dir;
 
   if (await pathExists(path)) {
     return load(await readFile(path, 'utf-8')) as Device[];
