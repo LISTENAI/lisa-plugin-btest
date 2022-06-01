@@ -1,6 +1,6 @@
 import { job } from '@listenai/lisa_core/lib/task';
 import execa from 'execa';
-import { join } from 'path';
+import {join, resolve} from 'path';
 
 import { FRAMEWORK_DIR } from '../const';
 import { alterPathFromEnv } from '../utils/path';
@@ -8,6 +8,7 @@ import { readProject } from '../utils/project';
 import { forceCast } from '../utils/typing';
 import workspace from '../utils/workspace';
 import parseArgs from "../utils/parseArgs";
+import python from "@binary/python-3.9";
 
 export default () => {
   job('run', {
@@ -23,11 +24,12 @@ export default () => {
         return printHelp();
       }
 
-      const path = args['with-config'] ?? workspace();
+      const path = workspace();
+      const configPath = args['with-config'] ?? join(path, 'lisa-btest.yml');
 
-      const project = await readProject(path);
+      const project = await readProject(configPath);
       if (!project) {
-        throw new Error(`该目录不是一个 lisa-btest 项目，或指定了无效的lisa-test.yml路径: ${path}\n` +
+        throw new Error(`该目录不是一个 lisa-btest 项目，或指定了无效的lisa-test.yml路径: ${configPath}\n` +
           '如果lisa-btest.yml位于其他路径，请使用 --with-config 参数指定。');
       }
       const commands = forceCast(project) as Record<`test_command:${typeof process.platform}`, string>;
@@ -43,7 +45,8 @@ export default () => {
         stdio: 'inherit',
         env: {
           ...alterPathFromEnv('PYTHONPATH', join(FRAMEWORK_DIR, 'python')),
-        },
+          ...alterPathFromEnv('PATH', join(python.binaryDir, 'Scripts'))
+        }
       });
 
       task.title = title;
