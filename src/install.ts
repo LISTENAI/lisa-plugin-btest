@@ -26,6 +26,9 @@ import download from "@xingrz/download2";
   await download(pyPluginUrl, pyPluginPath, {
     extract: true
   });
+  if (process.platform != 'win32') {
+    await symlink('python3', join(pyPluginPath, 'bin', 'python'));
+  }
   //const pyPluginPath = resolve(__dirname, 'node_modules', '@binary', 'python-3.9');
   /*await remove(resolve(pyPluginPath, 'binary'));
   await exec('node', [
