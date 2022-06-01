@@ -1,5 +1,5 @@
 import { job } from '@listenai/lisa_core/lib/task';
-import { join } from 'path';
+import {join, resolve} from 'path';
 
 import extendExec from '../utils/extendExec';
 import parseArgs from '../utils/parseArgs';
@@ -20,11 +20,12 @@ export default () => {
         return printHelp();
       }
 
-      const path = args['with-config'] ?? workspace();
+      const path = workspace();
+      const configPath = resolve(args['with-config'] ?? join(path, 'lisa-btest.yml'));
 
-      const project = await readProject(path);
+      const project = await readProject(configPath);
       if (!project) {
-        throw new Error(`该目录不是一个 lisa-btest 项目: ${path}`);
+        throw new Error(`该目录不是一个 lisa-btest 项目: ${configPath}`);
       }
       if (!project.board) {
         throw new Error(`未定义板型 'board'`);
@@ -54,9 +55,10 @@ export default () => {
         return printHelp();
       }
 
-      const path = args['with-device-map'] ?? workspace();
+      const path = workspace();
+      const devMapPath = resolve(args['with-device-map'] ?? join(path, 'device-map.yml'));
 
-      const definedProbes = (await readDeviceMap(path)).map(({ probe }) => probe);
+      const definedProbes = (await readDeviceMap(devMapPath)).map(({ probe }) => probe);
       if (definedProbes.length == 0) {
         throw new Error(`未定义设备映射 (device-map.yml)`);
       }
