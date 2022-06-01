@@ -1,10 +1,12 @@
 import { ensureDir, remove, symlink, outputJSON } from 'fs-extra';
 import {join, resolve} from 'path';
+
 import { FRAMEWORK_DIR, LISA_BTEST_HOME, PYTHON_VENV_DIR, PIP_INDEX_URL, ENV_CACHE_DIR } from './const';
 import extendExec from './utils/extendExec';
 import makeEnv from './utils/makeEnv';
 
 import python from "@binary/python-3.9";
+import download from "@xingrz/download2";
 
 (async () => {
   await ensureDir(LISA_BTEST_HOME);
@@ -13,15 +15,26 @@ import python from "@binary/python-3.9";
 
   //trigger @binary/python-3.9 download
   console.log('Downloading python3.9 binary...');
-  const pyPluginPath = resolve(__dirname, '..', 'node_modules', '@binary', 'python-3.9');
-  const exec = extendExec();
-  await remove(resolve(pyPluginPath, 'binary'));
+  const PACKAGE = 'python-3.9';
+  const VERSION = '3.9.7';
+  const NAME = `${PACKAGE}-${VERSION}-${process.platform}_${process.arch}.tar.zst`;
+
+  const pyPluginPath = resolve(__dirname, 'node_modules', '@binary', 'python-3.9', 'binary');
+  const pyPluginUrl = `https://cdn.iflyos.cn/public/lisa-binary/${PACKAGE}/${NAME}`;
+
+  await remove(pyPluginPath);
+  await download(pyPluginUrl, pyPluginPath, {
+    extract: true
+  });
+  //const pyPluginPath = resolve(__dirname, 'node_modules', '@binary', 'python-3.9');
+  /*await remove(resolve(pyPluginPath, 'binary'));
   await exec('node', [
       resolve(pyPluginPath, 'lib', 'install.js')
-  ]);
+  ]);*/
 
   //install python venv
   console.log('Preparing isolated python environment...');
+  const exec = extendExec();
   await exec(join(python.binaryDir, "python"), [
     "-m",
     "venv",
@@ -33,10 +46,9 @@ import python from "@binary/python-3.9";
   console.log('Install default packages...');
   await exec(join(PYTHON_VENV_DIR, 'Scripts', 'pip'), [
       'install',
-      '-r',
-      join(FRAMEWORK_DIR, 'python', 'default_requirements.txt'),
       '-i',
-      PIP_INDEX_URL
+      PIP_INDEX_URL,
+      'parse', 'pyocd', 'pyserial', 'pytest', 'pyyaml',
   ]);
   console.log("Isolated python environment ready!");
 
