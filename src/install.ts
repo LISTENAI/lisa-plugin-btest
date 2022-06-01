@@ -51,10 +51,12 @@ import download from "@xingrz/download2";
   console.log('Install default packages...');
   const pipPathPrefix = process.platform === 'win32' ?
       join(PYTHON_VENV_DIR, 'Scripts') : join(PYTHON_VENV_DIR, 'bin');
+  const npmRegUrl = typeof(process.env.GITHUB_ACTIONS) !== "undefined" ?
+      'https://registry.npmjs.org' : PIP_INDEX_URL;
   await exec(join(pipPathPrefix, 'pip'), [
       'install',
       '-i',
-      PIP_INDEX_URL,
+      npmRegUrl,
       'parse', 'pyocd', 'pyserial', 'pytest', 'pyyaml',
   ]);
   console.log("Isolated python environment ready!");
