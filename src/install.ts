@@ -38,7 +38,7 @@ import download from "@xingrz/download2";
   //install python venv
   console.log('Preparing isolated python environment...');
   const exec = extendExec();
-  await exec(join(python.binaryDir, "python"), [
+  await exec(join(pyPluginPath, 'bin', 'python'), [
     "-m",
     "venv",
     PYTHON_VENV_DIR,
