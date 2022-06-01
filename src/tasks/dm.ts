@@ -38,7 +38,7 @@ export default () => {
       task.title = '';
 
       const { args, printHelp } = parseArgs({
-        'path': { short: 'd', arg: 'path', help: '指定device-map.yml所在路径' },
+        'output': { short: 'd', arg: 'output', help: '指定device-map.yml所在路径' },
         'task-help': { short: 'h', help: '打印帮助' },
       });
 
@@ -46,7 +46,7 @@ export default () => {
         return printHelp();
       }
 
-      const path = resolve(args['path'] ?? join(workspace(), 'device-map.yml'));
+      const path = resolve(args['output'] ?? join(workspace(), 'device-map.yml'));
 
       const deviceMap = await readDeviceMap(path);
       if (deviceMap.length > 0) {
