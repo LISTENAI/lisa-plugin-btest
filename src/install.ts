@@ -38,7 +38,9 @@ import download from "@xingrz/download2";
   //install python venv
   console.log('Preparing isolated python environment...');
   const exec = extendExec();
-  await exec(join(pyPluginPath, 'bin', 'python'), [
+  const pyPathPrefix = process.platform === 'win32' ?
+      python.binaryDir : join(pyPluginPath, 'bin');
+  await exec(join(pyPathPrefix, 'python'), [
     "-m",
     "venv",
     PYTHON_VENV_DIR,
@@ -47,7 +49,9 @@ import download from "@xingrz/download2";
 
   //install default requirements
   console.log('Install default packages...');
-  await exec(join(PYTHON_VENV_DIR, 'bin', 'pip'), [
+  const pipPathPrefix = process.platform === 'win32' ?
+      join(PYTHON_VENV_DIR, 'Scripts') : join(PYTHON_VENV_DIR, 'bin');
+  await exec(join(pipPathPrefix, 'pip'), [
       'install',
       '-i',
       PIP_INDEX_URL,
