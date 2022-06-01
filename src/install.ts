@@ -1,5 +1,5 @@
 import { ensureDir, remove, symlink, outputJSON } from 'fs-extra';
-import { join } from 'path';
+import {join, resolve} from 'path';
 import { FRAMEWORK_DIR, LISA_BTEST_HOME, PYTHON_VENV_DIR, PIP_INDEX_URL, ENV_CACHE_DIR } from './const';
 import extendExec from './utils/extendExec';
 import makeEnv from './utils/makeEnv';
@@ -11,9 +11,16 @@ import python from "@binary/python-3.9";
   await remove(join(LISA_BTEST_HOME, 'framework'));
   await symlink(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
 
+  //trigger @binary/python-3.9 download
+  console.log('Downloading python3.9 binary...');
+  const pyPluginPath = resolve(__dirname, '..', 'node_modules', '@binary', 'python-3.9');
+  const exec = extendExec();
+  await exec('node', [
+      resolve(pyPluginPath, 'lib', 'install.js')
+  ]);
+
   //install python venv
   console.log('Preparing isolated python environment...');
-  const exec = extendExec();
   await exec(join(python.binaryDir, "python"), [
     "-m",
     "venv",
