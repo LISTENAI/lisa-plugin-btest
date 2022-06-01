@@ -52,7 +52,7 @@ import download from "@xingrz/download2";
   const pipPathPrefix = process.platform === 'win32' ?
       join(PYTHON_VENV_DIR, 'Scripts') : join(PYTHON_VENV_DIR, 'bin');
   const npmRegUrl = typeof(process.env.GITHUB_ACTIONS) !== "undefined" ?
-      'https://registry.npmjs.org' : PIP_INDEX_URL;
+      'https://pypi.org/simple' : PIP_INDEX_URL;
   await exec(join(pipPathPrefix, 'pip'), [
       'install',
       '-i',
