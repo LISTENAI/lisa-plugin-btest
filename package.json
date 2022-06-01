@@ -1,6 +1,6 @@
 {
   "name": "@lisa-plugin/btest",
-  "version": "2.0.0-a1",
+  "version": "2.0.0-alpha.1",
   "description": "LISA plugin for behavior testing",
   "main": "lib/main.js",
   "scripts": {
@@ -26,7 +26,8 @@
   "maintainers": [
     "lpmadmin <lpm.admin@listenai.com>",
     "xychen <xychen@listenai.com>",
-    "zbzhao <zbzhao@listenai.com>"
+    "zbzhao <zbzhao@listenai.com>",
+    "ywang <wangyang2@listenai.com>"
   ],
   "license": "UNLICENSED",
   "bugs": {
