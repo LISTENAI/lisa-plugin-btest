@@ -1,21 +1,18 @@
 import { job } from '@listenai/lisa_core/lib/task';
 import execa from 'execa';
-import {join, resolve} from 'path';
+import { join } from 'path';
 
-import { FRAMEWORK_DIR } from '../const';
-import { alterPathFromEnv } from '../utils/path';
 import { readProject } from '../utils/project';
 import { forceCast } from '../utils/typing';
 import workspace from '../utils/workspace';
 import parseArgs from "../utils/parseArgs";
-import python from "@binary/python-3.9";
+import getEnv from "../utils/getEnv";
 
 export default () => {
   job('run', {
     title: '运行测试',
     async task(ctx, task) {
       const { args, printHelp } = parseArgs({
-        //'with-device-map': { short: 'd', arg: 'with-device-map', help: '指定device-map.yml所在路径' },
         'with-config': { short: 'c', arg: 'with-config', help: '指定lisa-btest.yml所在路径' },
         'task-help': { short: 'h', help: '打印帮助' },
       });
@@ -41,12 +38,10 @@ export default () => {
       const title = task.title;
       task.title = '';
 
+
       await execa.command(test_command, {
         stdio: 'inherit',
-        env: {
-          ...alterPathFromEnv('PYTHONPATH', join(FRAMEWORK_DIR, 'python')),
-          ...alterPathFromEnv('PATH', join(python.binaryDir, 'Scripts'))
-        }
+        env: await getEnv()
       });
 
       task.title = title;
