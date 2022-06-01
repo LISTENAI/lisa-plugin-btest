@@ -1,20 +1,41 @@
 import { ensureDir, remove, symlink, outputJSON } from 'fs-extra';
-import { join } from 'path';
+import {join, resolve} from 'path';
+
 import { FRAMEWORK_DIR, LISA_BTEST_HOME, PYTHON_VENV_DIR, PIP_INDEX_URL, ENV_CACHE_DIR } from './const';
 import extendExec from './utils/extendExec';
 import makeEnv from './utils/makeEnv';
 
 import python from "@binary/python-3.9";
+import download from "@xingrz/download2";
 
 (async () => {
   await ensureDir(LISA_BTEST_HOME);
   await remove(join(LISA_BTEST_HOME, 'framework'));
   await symlink(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
 
+  //trigger @binary/python-3.9 download
+  console.log('Downloading python3.9 binary...');
+  const PACKAGE = 'python-3.9';
+  const VERSION = '3.9.7';
+  const NAME = `${PACKAGE}-${VERSION}-${process.platform}_${process.arch}.tar.zst`;
+
+  const pyPluginPath = resolve(__dirname, 'node_modules', '@binary', 'python-3.9', 'binary');
+  const pyPluginUrl = `https://cdn.iflyos.cn/public/lisa-binary/${PACKAGE}/${NAME}`;
+
+  await remove(pyPluginPath);
+  await download(pyPluginUrl, pyPluginPath, {
+    extract: true
+  });
+  if (process.platform != 'win32') {
+    await symlink('python3', join(pyPluginPath, 'bin', 'python'));
+  }
+
   //install python venv
   console.log('Preparing isolated python environment...');
   const exec = extendExec();
-  await exec(join(python.binaryDir, "python"), [
+  const pyPathPrefix = process.platform === 'win32' ?
+      python.binaryDir : join(pyPluginPath, 'bin');
+  await exec(join(pyPathPrefix, 'python'), [
     "-m",
     "venv",
     PYTHON_VENV_DIR,
@@ -23,12 +44,15 @@ import python from "@binary/python-3.9";
 
   //install default requirements
   console.log('Install default packages...');
-  await exec(join(PYTHON_VENV_DIR, 'Scripts', 'pip'), [
+  const pipPathPrefix = process.platform === 'win32' ?
+      join(PYTHON_VENV_DIR, 'Scripts') : join(PYTHON_VENV_DIR, 'bin');
+  const npmRegUrl = typeof(process.env.GITHUB_ACTIONS) !== "undefined" ?
+      'https://pypi.org/simple' : PIP_INDEX_URL;
+  await exec(join(pipPathPrefix, 'pip'), [
       'install',
-      '-r',
-      join(FRAMEWORK_DIR, 'python', 'default_requirements.txt'),
       '-i',
-      PIP_INDEX_URL
+      npmRegUrl,
+      'parse', 'pyocd', 'pyserial', 'pytest', 'pyyaml',
   ]);
   console.log("Isolated python environment ready!");
 
