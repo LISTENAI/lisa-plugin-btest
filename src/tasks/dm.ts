@@ -15,7 +15,16 @@ export default () => {
   job('dm:show', {
     title: '显示设备映射',
     async task(ctx, task) {
-      const path = workspace();
+      const { args, printHelp } = parseArgs({
+        'with-device-map': { short: 'd', arg: 'output', help: '指定device-map.yml所在路径' },
+        'task-help': { short: 'h', help: '打印帮助' },
+      });
+
+      if (args['task-help']) {
+        return printHelp();
+      }
+
+      const path = resolve(args['with-device-map'] ?? join(workspace(), 'device-map.yml'));
 
       const deviceMap = await readDeviceMap(path);
       if (deviceMap.length == 0) {
