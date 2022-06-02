@@ -25,7 +25,7 @@ import download from "@xingrz/download2";
 
   console.log(pyPluginPath);
   const pyPluginUrlTemplate = process.env.PYTHON_BIN_URL_TEMPLATE ?? 'https://cdn.iflyos.cn/public/lisa-binary/{{PACKAGE}}/{{NAME}}';
-  const pyPluginUrl = pyPluginUrlTemplate.replace('{{PACKAGE}}', PACKAGE).replaceAll('{{NAME}}', NAME);
+  const pyPluginUrl = pyPluginUrlTemplate.replace('{{PACKAGE}}', PACKAGE).replace('{{NAME}}', NAME);
   console.log(`Downloading from ${pyPluginUrl}`);
 
   await remove(pyPluginPath);
