@@ -1,4 +1,3 @@
-import python from "@binary/python-3.9";
 import { FRAMEWORK_DIR, PYTHON_VENV_DIR } from "../const";
 import {join} from "path";
 

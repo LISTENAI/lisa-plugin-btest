@@ -18,6 +18,13 @@ jobs:
           node-version: '16'
           cache: 'npm'
 
+      - name: LPM Config
+        run: |
+          npm config set //registry-lpm.listenai.com/:_password ${{ secrets.LPM_ADMIN_TOKEN }}
+          npm config set //registry-lpm.listenai.com/:username lpmadmin
+          npm config set //registry-lpm.listenai.com/:email lpm.admin@listenai.com
+          npm config set //registry-lpm.listenai.com/:always-auth true
+
       - name: Install dependencies
         run: npm install --ignore-scripts --registry=https://registry-lpm.listenai.com
 
@@ -56,6 +63,8 @@ jobs:
 
       - name: Install @lisa-plugin/btest
         run: lisa install -g ${{ needs.build.outputs.tarball }}
+        env:
+          PYTHON_BIN_URL_TEMPLATE: ${{ secrets.PYTHON_BIN_URL_TEMPLATE }}
 
       - name: Test list:shell
         run: lisa btest list:shell
