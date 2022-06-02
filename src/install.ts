@@ -23,10 +23,8 @@ import download from "@xingrz/download2";
     await mkdirp(pyPluginPath);
   }
 
-  console.log(pyPluginPath);
   const pyPluginUrlTemplate = process.env.PYTHON_BIN_URL_TEMPLATE ?? 'https://cdn.iflyos.cn/public/lisa-binary/{{PACKAGE}}/{{NAME}}';
   const pyPluginUrl = pyPluginUrlTemplate.replace('{{PACKAGE}}', PACKAGE).replace('{{NAME}}', NAME);
-  console.log(`Downloading from ${pyPluginUrl}`);
 
   await remove(pyPluginPath);
   await download(pyPluginUrl, pyPluginPath, {
@@ -38,7 +36,6 @@ import download from "@xingrz/download2";
 
   //install python venv
   console.log('Preparing isolated python environment...');
-  //const pyPluginPath = resolve(__dirname, '..', 'node_modules', '@binary', 'python-3.9', 'binary');
   const exec = extendExec();
   const pyPathPrefix = process.platform === 'win32' ?
       pyPluginPath : join(pyPluginPath, 'bin');
