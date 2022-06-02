@@ -1,11 +1,10 @@
-import { ensureDir, remove, symlink, outputJSON } from 'fs-extra';
+import { ensureDir, remove, symlink, outputJSON, pathExistsSync, mkdirp } from 'fs-extra';
 import {join, resolve} from 'path';
 
 import { FRAMEWORK_DIR, LISA_BTEST_HOME, PYTHON_VENV_DIR, PIP_INDEX_URL, ENV_CACHE_DIR } from './const';
 import extendExec from './utils/extendExec';
 import makeEnv from './utils/makeEnv';
 
-import python from "@binary/python-3.9";
 import download from "@xingrz/download2";
 
 (async () => {
@@ -20,6 +19,10 @@ import download from "@xingrz/download2";
   const NAME = `${PACKAGE}-${VERSION}-${process.platform}_${process.arch}.tar.zst`;
 
   const pyPluginPath = resolve(__dirname, '..', 'node_modules', '@binary', 'python-3.9', 'binary');
+  if (!pathExistsSync(pyPluginPath)) {
+    await mkdirp(pyPluginPath);
+  }
+
   console.log(pyPluginPath);
   const pyPluginUrlTemplate = process.env.PYTHON_BIN_URL_TEMPLATE ?? 'https://cdn.iflyos.cn/public/lisa-binary/{{PACKAGE}}/{{NAME}}';
   const pyPluginUrl = pyPluginUrlTemplate.replaceAll('{{PACKAGE}}', PACKAGE).replaceAll('{{NAME}}', NAME);
@@ -38,7 +41,7 @@ import download from "@xingrz/download2";
   //const pyPluginPath = resolve(__dirname, '..', 'node_modules', '@binary', 'python-3.9', 'binary');
   const exec = extendExec();
   const pyPathPrefix = process.platform === 'win32' ?
-      python.binaryDir : join(pyPluginPath, 'bin');
+      pyPluginPath : join(pyPluginPath, 'bin');
   await exec(join(pyPathPrefix, 'python'), [
     "-m",
     "venv",
