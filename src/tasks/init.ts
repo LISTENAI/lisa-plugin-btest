@@ -28,7 +28,7 @@ export default () => {
 
             //check if test-case folder already exists
             task.title = '';
-            let testCasePath = join(btestPath, 'tests');
+            let testCasePath = join(btestPath, 'btests');
             let testCaseConfigPath = join(btestPath, 'lisa-btest.yml');
             if (existsSync(testCasePath) || existsSync(testCaseConfigPath)) {
                 throw new Error(`指定的文件夹下已经存在测试用例。请指定另一个路径，然后重试。`);
@@ -37,8 +37,8 @@ export default () => {
 
             //create folder and put samples in there
             try {
-                mkdirpSync(join(btestPath, 'tests'));
-                cpSync(join(FRAMEWORK_DIR, 'templates', 'sample.py'), join(btestPath, 'tests', 'sample.py'));
+                mkdirpSync(join(btestPath, 'btests'));
+                cpSync(join(FRAMEWORK_DIR, 'templates', 'sample.py'), join(btestPath, 'btests', 'sample.py'));
                 cpSync(join(FRAMEWORK_DIR, 'templates', 'lisa-btest.yml'), join(btestPath, 'lisa-btest.yml'));
             } catch (e) {
                 throw new Error(`btest项目初始化失败：\n${e}`);
