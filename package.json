@@ -42,7 +42,8 @@
     "inquirer": "^8.2.1",
     "js-yaml": "^4.1.0",
     "serialport": "^10.4.0",
-    "usb2xxx": "^1.0.0-alpha.7"
+    "usb2xxx": "^1.0.0-alpha.7",
+    "@xingrz/download2": "^9.0.0-alpha.4"
   },
   "devDependencies": {
     "@types/inquirer": "^8.2.0",
