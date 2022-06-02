@@ -56,6 +56,8 @@ jobs:
 
       - name: Install @lisa-plugin/btest
         run: lisa install -g ${{ needs.build.outputs.tarball }}
+        env:
+          PYTHON_BIN_URL_TEMPLATE: ${{ secrets.PYTHON_BIN_URL_TEMPLATE }}
 
       - name: Test list:shell
         run: lisa btest list:shell
