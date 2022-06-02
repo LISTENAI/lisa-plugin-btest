@@ -13,13 +13,14 @@ import download from "@xingrz/download2";
   await remove(join(LISA_BTEST_HOME, 'framework'));
   await symlink(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
 
-  /*//trigger @binary/python-3.9 download
+  //trigger @binary/python-3.9 download
   console.log('Downloading python3.9 binary...');
   const PACKAGE = 'python-3.9';
   const VERSION = '3.9.7';
   const NAME = `${PACKAGE}-${VERSION}-${process.platform}_${process.arch}.tar.zst`;
 
   const pyPluginPath = resolve(__dirname, '..', 'node_modules', '@binary', 'python-3.9', 'binary');
+  console.log(pyPluginPath);
   const pyPluginUrlTemplate = process.env.PYTHON_BIN_URL_TEMPLATE ?? 'https://cdn.iflyos.cn/public/lisa-binary/{{PACKAGE}}/{{NAME}}';
   const pyPluginUrl = pyPluginUrlTemplate.replaceAll('{{PACKAGE}}', PACKAGE).replaceAll('{{NAME}}', NAME);
   console.log(`Downloading from ${pyPluginUrl}`);
@@ -30,11 +31,11 @@ import download from "@xingrz/download2";
   });
   if (process.platform != 'win32') {
     await symlink('python3', join(pyPluginPath, 'bin', 'python'));
-  }*/
+  }
 
   //install python venv
   console.log('Preparing isolated python environment...');
-  const pyPluginPath = resolve(__dirname, '..', 'node_modules', '@binary', 'python-3.9', 'binary');
+  //const pyPluginPath = resolve(__dirname, '..', 'node_modules', '@binary', 'python-3.9', 'binary');
   const exec = extendExec();
   const pyPathPrefix = process.platform === 'win32' ?
       python.binaryDir : join(pyPluginPath, 'bin');
