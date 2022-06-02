@@ -19,7 +19,7 @@ import python from "@binary/python-3.9";
   const VERSION = '3.9.7';
   const NAME = `${PACKAGE}-${VERSION}-${process.platform}_${process.arch}.tar.zst`;
 
-  const pyPluginPath = resolve(__dirname, 'node_modules', '@binary', 'python-3.9', 'binary');
+  const pyPluginPath = resolve(__dirname, '..', 'node_modules', '@binary', 'python-3.9', 'binary');
   const pyPluginUrl = `https://cdn.iflyos.cn/public/lisa-binary/${PACKAGE}/${NAME}`;
 
   await remove(pyPluginPath);
