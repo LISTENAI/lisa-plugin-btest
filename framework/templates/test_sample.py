@@ -14,6 +14,7 @@ def connected_device():
         shell.close()
 
 
-def test_help(connected_device):
+def test_case_1(connected_device):
     # Put your test case here
-    assert true
+    # all filename should be started with "test_" (e.g. test_sample.py)
+    assert True
