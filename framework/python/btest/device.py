@@ -36,22 +36,28 @@ def shell_open(id, baudrate=115200):
     return _shell.shell_open(id, baudrate)
 
 
+
 # def shell_cmd(shell, module, cmd, wait=False):
 def shell_cmd(shell, cmd=True, wait=False):
     # _shell.shell_exec(shell, 'test_%s %s %s %s %s' % (module, cmd, *args))
     # _shell.Shell.exec(shell, 'test_%s %s %s %s %s %s' % (module, cmd, *args))
     if cmd:
+       
         _shell.Shell.exec(shell, '%s' % (cmd))
     else:
-
+       
         read= _shell.Shell.read(shell)  # 只读
         return read # 如果没有cmd传入，则只读，返回读到的文本
     if wait:
+        print("wait=True")
         # p = _shell.Shell.match(shell, 'pin_state:{}', full_match=True)
         if 'raw' in cmd:
-            p = _shell.Shell.match(shell, 'pin_state:{}', full_match=True)
-
+            # p = _shell.Shell.match(shell, 'pin_state:{}', full_match=True,3)
+            p = _shell.Shell.match(shell, 'pin_state: {}', False ,True  ,10)
+           
         else:
-            p = _shell.Shell.match(shell, 'DONE:{}', full_match=True)  # 如果是非INPUT的用例获取DOne的值，否则获取pin_state的值
+            p = _shell.Shell.match(shell, 'DONE:{}', False ,True  ,10)  # 如果是非INPUT的用例获取DOne的值，否则获取pin_state的值
+           
         return int(p[0])
-    return 0
+
+    # return 0

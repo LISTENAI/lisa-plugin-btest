@@ -6,6 +6,7 @@ from btest.utils import logfile
 
 @pytest.fixture
 def connected_device():
+    # set path of device-map.yml accordingly
     devices = device.load_devices('device-map.yml')
     assert len(devices) > 0
     with logfile('./logs', __name__) as f:
@@ -14,6 +15,7 @@ def connected_device():
         shell.close()
 
 
-def test_help(connected_device):
+def test_case_1(connected_device):
     # Put your test case here
-    assert true
+    # all filename should be started with "test_" (e.g. test_sample.py)
+    assert True
