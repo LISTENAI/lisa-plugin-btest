@@ -7,9 +7,14 @@ export default async function makeEnv(override?: string): Promise<Record<string,
     const env: Record<string, string> = {
         VIRTUAL_ENV: PYTHON_VENV_DIR,
         PIP_INDEX_URL: PIP_INDEX_URL,
-        Path: `${PYTHON_VENV_DIR};${join(PYTHON_VENV_DIR, 'Scripts')}`,
         PYTHONPATH: join(FRAMEWORK_DIR, 'python')
     };
+
+    if (process.platform === 'win32') {
+        env['Path'] = `${PYTHON_VENV_DIR};${join(PYTHON_VENV_DIR, 'Scripts')}`;
+    } else {
+        env['PATH'] = `${PYTHON_VENV_DIR}:${join(PYTHON_VENV_DIR, 'bin')}`;
+    }
 
     return env;
 }
