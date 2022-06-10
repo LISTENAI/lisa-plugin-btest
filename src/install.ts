@@ -1,7 +1,15 @@
 import { ensureDir, remove, symlink, outputJSON, pathExistsSync, mkdirp } from 'fs-extra';
 import {join, resolve} from 'path';
 
-import { FRAMEWORK_DIR, LISA_BTEST_HOME, PYTHON_VENV_DIR, PIP_INDEX_URL, ENV_CACHE_DIR } from './const';
+import {
+  FRAMEWORK_DIR,
+  LISA_BTEST_HOME,
+  PYTHON_VENV_DIR,
+  PIP_INDEX_URL,
+  ENV_CACHE_DIR,
+  CUSTOM_PYOCD_URL,
+  REQED_PACKAGES
+} from './const';
 import extendExec from './utils/extendExec';
 import makeEnv from './utils/makeEnv';
 
@@ -47,16 +55,22 @@ import download from "@xingrz/download2";
   ]);
 
   //install default requirements
-  console.log('Install default packages...');
+  console.log('Installing default packages...');
   const pipPathPrefix = process.platform === 'win32' ?
       join(PYTHON_VENV_DIR, 'Scripts') : join(PYTHON_VENV_DIR, 'bin');
-  const npmRegUrl = typeof(process.env.GITHUB_ACTIONS) !== "undefined" ?
+  const pipRegUrl = typeof(process.env.GITHUB_ACTIONS) !== "undefined" ?
       'https://pypi.org/simple' : PIP_INDEX_URL;
+  const defPkgInsArgs = ['install', '-i', pipRegUrl];
+  REQED_PACKAGES.forEach(pkg => {
+    defPkgInsArgs.push(pkg);
+  });
+  await exec(join(pipPathPrefix, 'pip'), defPkgInsArgs);
+
+  //install customized pyocd
+  console.log('Installing customized packages...');
   await exec(join(pipPathPrefix, 'pip'), [
       'install',
-      '-i',
-      npmRegUrl,
-      'parse', 'pyocd', 'pyserial', 'pytest', 'pyyaml',
+      CUSTOM_PYOCD_URL
   ]);
   console.log("Isolated python environment ready!");
 

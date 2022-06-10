@@ -1,5 +1,0 @@
-parse
-pyocd
-pyserial
-pytest
-pyyaml
