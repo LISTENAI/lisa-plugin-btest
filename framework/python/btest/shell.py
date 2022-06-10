@@ -55,7 +55,7 @@ class Shell:
             time_end =time.time()
             time_cha = time_end-time_start
 
-            r = str(self.serial.readline(), 'utf-8')
+            r = str(self.serial.readline(), 'utf-8', 'ignore')
             print(f'串口日志{r}')
             if self.log_to is not None:
                 self.log_to.write(r)
@@ -78,7 +78,7 @@ class Shell:
             time_end =time.time()
             time_cha = time_end-time_start
 
-            r = str(self.serial.readline(), 'utf-8')
+            r = str(self.serial.readline(), 'utf-8', 'ignore')
             if r == '':
                 break
             print(f'串口日志{r}')
@@ -92,6 +92,6 @@ class Shell:
         for i in range(100):
             n = self.serial.inWaiting()
             if n:
-                text_str += str(self.serial.readline(), 'utf-8')
+                text_str += str(self.serial.readline(), 'utf-8', 'ignore')
                 print(f'text_str的值为{text_str}')
         return text_str
