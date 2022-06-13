@@ -56,18 +56,18 @@ class Shell:
             time_cha = time_end-time_start
 
             r = str(self.serial.readline(), 'utf-8', 'ignore')
-            print(f'串口日志{r}')
+            print(f'serial_log:{r}')
             if self.log_to is not None:
                 self.log_to.write(r)
 
             r = r.strip() if strip else r
             m = parse(format, r) if full_match else search(format, r)
             if m is not None:
-                print(f'期望值已经找到{m}')
+                print(f'result_found{m}')
                 return m
             # else:               # 若没找到则设置超时时间，到了超时时间未找到则退出
             if time_cha > timeout:
-                print('超时时间到了')
+                print('time_out_up')
             # print(time.time()-time_start)
                 break
     def get_logfile(self, format, full_match=False, strip=True,timeout=10):
@@ -81,17 +81,16 @@ class Shell:
             r = str(self.serial.readline(), 'utf-8', 'ignore')
             if r == '':
                 break
-            print(f'串口日志{r}')
+            print(f'serial_log:{r}')
             if self.log_to is not None:
                 self.log_to.write(r)
-
-
 
     def read(self, strip=True):
         text_str = ''
         for i in range(100):
             n = self.serial.inWaiting()
             if n:
-                text_str += str(self.serial.readline(), 'utf-8', 'ignore')
-                print(f'text_str的值为{text_str}')
+                text_str += str(self.serial.read(n), 'utf-8', 'ignore')
+                print(f'text_str_value {text_str}')
         return text_str
+    
