@@ -5,9 +5,43 @@ from usb2xxx import usb_device
 from . import shell as _shell
 import yaml
 
+import subprocess
+
+
+def pyocd_reset(cmd = "python -m pyocd reset -m hw",timeout =10,delayed =0):
+    """
+    Execute command on local machine
+    :param cmd:
+    :return:
+    """
+    print("**********************************")
+    print('Execute command ' + cmd + ' now')
+    print("**********************************")
+    pro = subprocess.Popen(cmd, bufsize=10000, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    result_str = ''
+    curline = pro.stdout.readline().decode('gbk')
+    time_start = time.time()
+    while curline != '':
+        time_end = time.time()
+        time_cha = time_end - time_start
+        result_str += curline
+        curline = pro.stdout.readline().decode('gbk')
+        if time_cha > timeout:
+            break
+    pro.wait()
+    _shell.Shell.flushInput()
+    _shell.Shell.flushOutput()
+    time.sleep(delayed)
+    return result_str
+
+
+
+
 
 def list_probes():
     return ConnectHelper.get_all_connected_probes(blocking=False, print_wait_message=False)
+
+
 
 
 def list_shells():
@@ -49,7 +83,7 @@ def shell_cmd(shell, cmd=True, wait=False):
         read= _shell.Shell.read(shell)  # 只读
         return read # 如果没有cmd传入，则只读，返回读到的文本
     if wait:
-        print("wait=True")
+        
         # p = _shell.Shell.match(shell, 'pin_state:{}', full_match=True)
         if 'raw' in cmd:
             # p = _shell.Shell.match(shell, 'pin_state:{}', full_match=True,3)
