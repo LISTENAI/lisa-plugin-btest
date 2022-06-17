@@ -5,8 +5,15 @@ from btest.shell import *
 from btest.utils import logfile
 
 @pytest.fixture
-def connected_device(dm= './device-map.yml',logs = './logs'):
-    # set path of device-map.yml accordingly
+def connected_device(request):
+    # request = request.param
+    # dm= './device-map.yml'
+
+    try:
+        dm = request.param
+    except:
+        dm= './device-map.yml'
+    logs = './logs'
     devices = device.load_devices(dm)
     assert len(devices) > 0
     with logfile(logs, __name__) as f:
