@@ -8,10 +8,10 @@ from btest.conftest import connected_device,reset
 
 #@pytest.mark.usefixtures("reset")    #如果要在此类下的**所有测试用例**运行前都进行模组复位，请解除注释此装饰器。
                                       #Uncomment this decorator if hardware reset is needed before **EVERY test-cases** in this class.
-class Test_Demo
+class Test_Demo:
     #@pytest.mark.usefixtures("reset")      #如果**仅需在此测试用例**运行前进行模组复位，请解除注释此装饰器。
                                             #Uncomment this decorator if hardware reset is ONLY needed before **THIS test-case**.
-    def test_match(connected_device):
+    def test_match(self, connected_device):
         # 如果device-map.yml不在生成时的默认位置，请使用dm参数指定路径。
         # specify the path of "device-map.yml" in "dm" parameter if it is not in the default location when generated.
         (shell) = connected_device(dm= './device-map.yml')
@@ -30,7 +30,7 @@ class Test_Demo
 
     # 您可以像这样定义自己的测试用例。
     # You may define your own test case like this.
-    def test_yourcase(connected_device):
+    def test_yourcase(self, connected_device):
         (shell) = connected_device(dm= './device-map.yml')
         # 您的测试用例代码
         # your custom code here
