@@ -1,5 +1,5 @@
 import { job } from '@listenai/lisa_core/lib/task';
-import { join } from 'path';
+import {join, resolve} from 'path';
 
 import extendExec from '../utils/extendExec';
 import parseArgs from '../utils/parseArgs';
@@ -11,11 +11,21 @@ export default () => {
   job('proj:build', {
     title: '构建测试固件',
     async task(ctx, task) {
-      const path = workspace();
+      const { args, printHelp } = parseArgs({
+        'with-config': { short: 'c', arg: 'with-config', help: '指定lisa-btest.yml所在路径' },
+        'task-help': { short: 'h', help: '打印帮助' },
+      });
 
-      const project = await readProject(path);
+      if (args['task-help']) {
+        return printHelp();
+      }
+
+      const path = workspace();
+      const configPath = resolve(args['with-config'] ?? join(path, 'lisa-btest.yml'));
+
+      const project = await readProject(configPath);
       if (!project) {
-        throw new Error(`该目录不是一个 lisa-btest 项目: ${path}`);
+        throw new Error(`该目录不是一个 lisa-btest 项目: ${configPath}`);
       }
       if (!project.board) {
         throw new Error(`未定义板型 'board'`);
@@ -37,6 +47,7 @@ export default () => {
     title: '烧录测试固件',
     async task(ctx, task) {
       const { args, printHelp } = parseArgs({
+        'with-device-map': { short: 'd', arg: 'with-device-map', help: '指定device-map.yml所在路径' },
         'probe': { short: 'p', arg: 'id', help: '指定烧录所用调试器 (使用逗号 "," 间隔，缺省烧录 device-map.yml 中已定义且已连接的全部调试器)' },
         'task-help': { short: 'h', help: '打印帮助' },
       });
@@ -45,8 +56,9 @@ export default () => {
       }
 
       const path = workspace();
+      const devMapPath = resolve(args['with-device-map'] ?? join(path, 'device-map.yml'));
 
-      const definedProbes = (await readDeviceMap(path)).map(({ probe }) => probe);
+      const definedProbes = (await readDeviceMap(devMapPath)).map(({ probe }) => probe);
       if (definedProbes.length == 0) {
         throw new Error(`未定义设备映射 (device-map.yml)`);
       }
