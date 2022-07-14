@@ -91,7 +91,6 @@ def shell_cmd(shell, cmd=True, wait=False):
            
         else:
             p = _shell.Shell.match(shell, 'DONE:{}', False ,True  ,10)  # 如果是非INPUT的用例获取DOne的值，否则获取pin_state的值
-           
-        return int(p[0])
+        return int(p[0][0])
 
     # return 0
