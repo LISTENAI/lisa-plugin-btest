@@ -1,4 +1,4 @@
-import { ensureDir, remove, symlink, outputJSON, pathExistsSync, mkdirp } from 'fs-extra';
+import {ensureDir, remove, symlink, outputJSON, pathExistsSync, mkdirp, ensureLink} from 'fs-extra';
 import {join, resolve} from 'path';
 
 import {
@@ -18,7 +18,12 @@ import download from "@xingrz/download2";
 (async () => {
   await ensureDir(LISA_BTEST_HOME);
   await remove(join(LISA_BTEST_HOME, 'framework'));
-  await symlink(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
+  if (process.platform != 'win32') {
+    await symlink(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
+  }
+  else {
+    await ensureLink(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
+  }
 
   //trigger @binary/python-3.9 download
   console.log('Downloading python3.9 binary...');
