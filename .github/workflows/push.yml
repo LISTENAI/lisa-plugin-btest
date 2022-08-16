@@ -50,13 +50,12 @@ jobs:
               [ self-hosted, X64, Linux, zgsz-02 ],
               [ self-hosted, X64, macOS, zgsz-02 ],
         ]
-        node: ['14', '16']
 
     steps:
       - name: Set up Node.js ${{ matrix.node }}
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: '16'
 
       - name: Download tarball
         uses: actions/download-artifact@v2
@@ -83,7 +82,7 @@ jobs:
     runs-on: [ self-hosted, X64, Linux, zgsz-02 ]
 
     steps:
-      - uses: actions/checkout@v2 
+      - uses: actions/checkout@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
