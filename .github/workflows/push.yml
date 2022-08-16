@@ -62,12 +62,14 @@ jobs:
           name: ${{ needs.build.outputs.tarball }}
 
       - name: Install @listenai/lisa
-        run: npm install -g @listenai/lisa && lisa login --token ${{ secrets.LS_ACCESS_TOKEN }}
+        run: npm install @listenai/lisa
+        working-directory: ${{ GITHUB_WORKSPACE }}
 
       - name: Install @lisa-plugin/btest
         run: lisa install -g ${{ needs.build.outputs.tarball }}
         env:
           PYTHON_BIN_URL_TEMPLATE: ${{ secrets.PYTHON_BIN_URL_TEMPLATE }}
+          LISA_HOME: ${{ GITHUB_WORKSPACE }}
 
       - name: Test list:shell
         run: lisa btest list:shell
