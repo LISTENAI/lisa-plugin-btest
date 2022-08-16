@@ -62,20 +62,29 @@ jobs:
           name: ${{ needs.build.outputs.tarball }}
 
       - name: Install @listenai/lisa
-        run: npm install @listenai/lisa
+        run: npm install -g @listenai/lisa
         working-directory: ${{ github.workspace }}
+        env:
+          USERPROFILE: ${{ github.workspace }}
 
       - name: Install @lisa-plugin/btest
         run: lisa install -g ${{ needs.build.outputs.tarball }}
         env:
           PYTHON_BIN_URL_TEMPLATE: ${{ secrets.PYTHON_BIN_URL_TEMPLATE }}
           LISA_HOME: ${{ github.workspace }}
+          USERPROFILE: ${{ github.workspace }}
 
       - name: Test list:shell
         run: lisa btest list:shell
+        env:
+          LISA_HOME: ${{ github.workspace }}
+          USERPROFILE: ${{ github.workspace }}
 
       - name: Test list:usb2xxx
         run: lisa btest list:usb2xxx
+        env:
+          LISA_HOME: ${{ github.workspace }}
+          USERPROFILE: ${{ github.workspace }}
 
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
