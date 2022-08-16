@@ -23,13 +23,20 @@ jobs:
           npm config set //registry-lpm.listenai.com/:username lpmadmin
           npm config set //registry-lpm.listenai.com/:email lpm.admin@listenai.com
           npm config set //registry-lpm.listenai.com/:always-auth true
+        env:
+          LISA_HOME: ${{ github.workspace }}
+          USERPROFILE: ${{ github.workspace }}
 
       - name: Install dependencies
         run: npm install --ignore-scripts --registry=https://registry-lpm.listenai.com
+        env:
+          USERPROFILE: ${{ github.workspace }}
 
       - name: Build
         id: build
         run: npm run build && echo "::set-output name=tarball::$(npm pack)"
+        env:
+          USERPROFILE: ${{ github.workspace }}
 
       - name: Upload tarball
         uses: actions/upload-artifact@v2

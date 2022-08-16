@@ -1,4 +1,4 @@
-import {ensureDir, remove, symlink, outputJSON, pathExistsSync, mkdirp, ensureLink} from 'fs-extra';
+import {ensureDir, remove, symlink, outputJSON, pathExistsSync, mkdirp, ensureLink, copy} from 'fs-extra';
 import {join, resolve} from 'path';
 
 import {
@@ -22,7 +22,7 @@ import download from "@xingrz/download2";
     await symlink(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
   }
   else {
-    await ensureLink(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
+    await copy(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
   }
 
   //trigger @binary/python-3.9 download
