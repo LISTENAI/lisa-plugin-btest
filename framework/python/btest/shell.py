@@ -6,7 +6,7 @@ import serial
 import subprocess
 def shell_list():
     return list_ports.comports()
-def shell_open(id, baudrate=115200, log_to=None):
+def shell_open(id, baudrate=921600, log_to=None):
     shells = shell_list()
     for s in shells:
         if s.serial_number and s.serial_number.lower() == id.lower():
@@ -56,7 +56,7 @@ class Shell:
     
     def read(self, strip=True):
         text_str = ''
-        for i in range(1000):
+        for i in range(10000):
             n = self.serial.inWaiting()
             if n:
                 text_str += str(self.serial.read(n), 'utf-8', 'ignore')
@@ -96,3 +96,23 @@ class Shell:
         time.sleep(delayed)
         return result_str
 
+    
+    def read_match(self, start_format=str, end_format=str,timeout = 10):
+        text_str = ''
+        time_start = time.time()
+        while True :
+            time_end =time.time()
+            time_cha = time_end-time_start
+            n = self.serial.inWaiting()
+            if n:
+                text_str = str(self.serial.read(n), 'utf-8', 'ignore')
+                if end_format in text_str:
+                    break
+            if time_cha > timeout:
+                print('time_out_up')
+                break
+            time.sleep(0.002)
+        # print(f'text_str_value {text_str}')
+        c =  text_str.split(start_format)[1]
+        text_cut_out_str =  c.split(end_format)[0]
+        return text_str , text_cut_out_str
