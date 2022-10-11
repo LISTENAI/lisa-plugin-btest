@@ -6,7 +6,7 @@ import serial
 import subprocess
 def shell_list():
     return list_ports.comports()
-def shell_open(id, baudrate=921600, log_to=None):
+def shell_open(id, baudrate=115200, log_to=None):
     shells = shell_list()
     for s in shells:
         if s.serial_number and s.serial_number.lower() == id.lower():
