@@ -42,7 +42,7 @@
 		return ret;                         \
 	} while (0);
 
-#endif  // _LISA_BTEST_H_
+
 
 /**
  * @brief 定义一个强转结构体附值
@@ -89,7 +89,7 @@ typedef struct cmd_parse {
 
 /**
  * @brief  命令解析函数
- * @param t_cmd_info
+ * @param t_cmd_info 
  * @param p  命令信息
  * @param cmd_table[] 结构体数组
  * @param cmd_table_len[]   数组长度
@@ -119,3 +119,5 @@ cmd_arg_parse(char **argv, t_cmd_info *p, t_cmd_parse cmd_table[], int cmd_table
 	}
 	return type;
 }
+
+#endif  // _LISA_BTEST_H_
