@@ -1,8 +1,10 @@
 import {readdirSync, readFileSync, statSync} from "fs";
-import {FRAMEWORK_DIR, PLUGIN_HOME} from "../const";
+import {FRAMEWORK_DIR, PLUGIN_HOME, PYTHON_VENV_DIR} from "../const";
 import {BinaryLike, createHash} from "crypto";
 import {resolve} from "path";
 import {outputJSON, pathExists, readFile, unlink} from "fs-extra";
+import {promisify} from "util";
+import { execFile as _execFile } from 'child_process';
 
 /**
  * Do integration check of specified framework files
@@ -25,20 +27,20 @@ export async function doIntegrationCheck(): Promise<Record<string, string>> {
     }));
     const fileList = getFiles(FRAMEWORK_DIR);
     let fuse = true;
-    fileList.forEach(f => {
+    for (const f of fileList) {
         if (!integrationList[f]) {
             result[f] = 'Added';
             fuse = false;
-            return;
+            continue;
         }
 
         const expectedHash : string = integrationList[f];
-        const fileHash : string = getFileHashByPath(resolve(PLUGIN_HOME, f));
+        const fileHash : string = await getFileHashByPath(resolve(PLUGIN_HOME, f));
         if (expectedHash !== fileHash) {
             result[f] = 'Modified';
             fuse = false;
         }
-    });
+    }
     if (!fuse) {
         result['Framework Integration'] = 'Failed';
     }
@@ -53,10 +55,10 @@ export async function generateIntegrationFile(): Promise<void> {
     const result: Record<string, string> = {};
 
     const files = getFiles(FRAMEWORK_DIR);
-    files.forEach(f => {
-        const hex = getFileHashByPath(resolve(PLUGIN_HOME, f));
+    for (const f of files) {
+        const hex = await getFileHashByPath(resolve(PLUGIN_HOME, f));
         result[f] = hex;
-    });
+    }
 
     const integrationFilePath = resolve(FRAMEWORK_DIR, 'integration.json');
     if (await pathExists(integrationFilePath)) {
@@ -105,8 +107,8 @@ export function getFiles(dir: string, files_?: string[]): string[] {
  * @param {string} path Path to the file
  * @returns {string} Hash (SHA256)
  */
-export function getFileHashByPath(path: string) : string {
-    return getFileHashByStream(readFileSync(path));
+export async function getFileHashByPath(path: string) : Promise<string> {
+    return await getFileHashByStream(readFileSync(path));
 }
 
 /**
@@ -114,10 +116,38 @@ export function getFileHashByPath(path: string) : string {
  * @param {string} path File stream
  * @returns {string} Hash (SHA256)
  */
-export function getFileHashByStream(fileStream: BinaryLike) : string {
+export async function getFileHashByStream(fileStream: BinaryLike) : Promise<string> {
     const hashsum = createHash('sha256');
     hashsum.update(fileStream);
     const hex = hashsum.digest('hex');
 
     return hex;
+}
+
+/**
+ * Get python version in venv
+ * @returns {string} python version
+ */
+export async function getPythonVersion() : Promise<string> {
+    const venvBinPath = resolve(PYTHON_VENV_DIR,
+        process.platform == 'win32' ? 'Scripts' : 'bin',
+        process.platform == 'win32' ? 'python.exe' : 'python');
+    const execFile = promisify(_execFile);
+
+    const { stdout } = await execFile(venvBinPath, ['--version']);
+    return stdout.split('\n')[0].trim();
+}
+
+/**
+ * Get pyocd version in venv
+ * @returns {string} pyocd version
+ */
+export async function getPyocdVersion() : Promise<string> {
+    const venvBinPath = resolve(PYTHON_VENV_DIR,
+        process.platform == 'win32' ? 'Scripts' : 'bin',
+        process.platform == 'win32' ? 'pyocd.exe' : 'pyocd');
+    const execFile = promisify(_execFile);
+
+    const { stdout } = await execFile(venvBinPath, ['--version']);
+    return stdout.split('\n')[0].trim();
 }
