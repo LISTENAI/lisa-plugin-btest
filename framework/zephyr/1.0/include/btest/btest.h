@@ -5,9 +5,9 @@
 #define NG "fail"
 #define error "error"
 #include <shell/shell.h>
-
+#include "btest.c"
 /**
- * @brief 定义一个shell实现函数
+ * @brief 单个shell实现函数
  *
  * @return .
  */
@@ -15,13 +15,15 @@
 #define BTEST_CMD(cmd, help, handler) SHELL_CMD(cmd, NULL, help, handler)
 
 /**
- * @brief 定义一个shell结束宏
+ * @brief sehll 结束命令
  *
  * @return .
  */
+
 #define BTEST_CMD_END SHELL_SUBCMD_SET_END
+
 /**
- * @brief 定义一个shell实现模块
+ * @brief shell实现模块
  *
  * @return .
  */
@@ -31,7 +33,7 @@
 	SHELL_CMD_REGISTER(test_##module, &test_##module, "Test commands for " #module, NULL);
 
 /**
- * @brief 定义一个shell日志输出
+ * @brief shell日志输出
  *
  * @return .
  */
@@ -42,20 +44,29 @@
 		return ret;                         \
 	} while (0);
 
+/**
+ * @brief 定义cmd结构体附值 在棧上使用
+ *
+ * @return .
+ */
 
+#define INPUT_STRUCT_INFO_STACK(CTX, STRUCT, NAME) \
+	STRUCT NAME = { 0 };\
+	CTX->struct_info = &NAME;
 
 /**
- * @brief 定义一个强转结构体附值
+ * @brief 定义cmd附值  在堆上使用
  *
  * @return .
  */
 
 #define INPUT_STRUCT_INFO(CTX, STRUCT, NAME) \
-	STRUCT *NAME = k_malloc(sizeof(STRUCT)); \
-	CTX->struct_info = NAME;
+        STRUCT *NAME = k_malloc(sizeof(STRUCT)); \
+		memset(NAME, 0x00, sizeof(STRUCT));\
+        CTX->struct_info = NAME;
 
 /**
- * @brief 定义一个强转结构体取值
+ * @brief 定义cmd结构体取值
  *
  * @return .
  */
@@ -63,7 +74,7 @@
 #define OUTPUT_STRUCT_INFO(CTX, STRUCT, NAME) STRUCT *NAME = (STRUCT *)CTX->struct_info;
 
 /**
- * @brief  定义一个CDM结构体信息
+ * @brief  定义一个CMD结构体信息
  *
  * @return .
  */
@@ -89,7 +100,7 @@ typedef struct cmd_parse {
 
 /**
  * @brief  命令解析函数
- * @param t_cmd_info 
+ * @param t_cmd_info
  * @param p  命令信息
  * @param cmd_table[] 结构体数组
  * @param cmd_table_len[]   数组长度
@@ -119,5 +130,20 @@ cmd_arg_parse(char **argv, t_cmd_info *p, t_cmd_parse cmd_table[], int cmd_table
 	}
 	return type;
 }
+
+ 
+/**
+ * @brief  分隔字符串
+ *
+ * @param str 需要分割的字符串
+ * @param ch  分隔符
+ * @param args  
+ * @param size   长度
+ * 
+ */
+
+void split(char* str, const char* ch, char*** args, int* size);
+
+
 
 #endif  // _LISA_BTEST_H_
