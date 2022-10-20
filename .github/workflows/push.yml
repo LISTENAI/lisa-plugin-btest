@@ -72,6 +72,9 @@ jobs:
       - name: Test list:usb2xxx
         run: lisa btest list:usb2xxx
 
+      - name: Test btest info
+        run: lisa info btest
+
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [build, test]
