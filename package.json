@@ -6,8 +6,7 @@
   "scripts": {
     "build": "tsc -p .",
     "watch": "tsc -p . -w",
-    "install": "node lib/install.js",
-    "postinstall": "node lib/integration.js",
+    "install": "node lib/install.js && node lib/integration.js",
     "prepublishOnly": "npm run build"
   },
   "files": [
