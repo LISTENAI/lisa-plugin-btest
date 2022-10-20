@@ -30,7 +30,7 @@ jobs:
 
       - name: Build
         id: build
-        run: npm run build && echo "::set-output name=tarball::$(npm pack)"
+        run: npm run build && npm run integration && echo "::set-output name=tarball::$(npm pack)"
 
       - name: Upload tarball
         uses: actions/upload-artifact@v2
