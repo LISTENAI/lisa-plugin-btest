@@ -30,7 +30,10 @@ jobs:
 
       - name: Build
         id: build
-        run: npm run build && npm run integration && echo "::set-output name=tarball::$(npm pack)"
+        run: |
+          npm run build
+          npm run integration
+          echo "tarball=$(npm pack)" >> $GITHUB_OUTPUT
 
       - name: Upload tarball
         uses: actions/upload-artifact@v2
@@ -45,7 +48,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        node: ['14', '16']
+        node: ['16']
 
     steps:
       - name: Set up Node.js ${{ matrix.node }}
