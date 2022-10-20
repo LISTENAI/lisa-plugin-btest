@@ -25,22 +25,34 @@ export async function doIntegrationCheck(): Promise<Record<string, string>> {
     const integrationList = JSON.parse(await readFile(integrationFilePath, {
         encoding: 'utf8'
     }));
+    const processed : Record<string, boolean> = {};
+    Object.keys(integrationList).forEach(k => {
+        processed[k] = false;
+    });
+
     const fileList = getFiles(FRAMEWORK_DIR);
     let fuse = true;
     for (const f of fileList) {
         if (!integrationList[f]) {
-            result[f] = 'Added';
+            result['* ' + f] = 'Added';
             fuse = false;
             continue;
         }
 
+        processed[f] = true;
         const expectedHash : string = integrationList[f];
         const fileHash : string = await getFileHashByPath(resolve(PLUGIN_HOME, f));
         if (expectedHash !== fileHash) {
-            result[f] = 'Modified';
+            result['* ' + f] = 'Modified';
             fuse = false;
         }
     }
+    Object.keys(processed).forEach(k => {
+        if (!processed[k]) {
+            result['* ' + k] = 'Deleted';
+            fuse = false;
+        }
+    })
     if (!fuse) {
         result['Framework Integration'] = 'Failed';
     }
@@ -80,11 +92,14 @@ export function getFiles(dir: string, files_?: string[]): string[] {
     ignorePath.add('templates');
     ignorePath.add('integration.json');
     ignorePath.add('cache.json');
+    ignorePath.add('example');
     const ignoreExtensions = new Set();
     ignoreExtensions.add('.so');
     ignoreExtensions.add('.dll');
     ignoreExtensions.add('.lib');
     ignoreExtensions.add('.dylib');
+    ignoreExtensions.add('.gitignore');
+    ignoreExtensions.add('.npmignore');
 
     files_ = files_ || [];
     let files = readdirSync(dir);
