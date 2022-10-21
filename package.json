@@ -1,6 +1,6 @@
 {
   "name": "@lisa-plugin/btest",
-  "version": "2.1.0-alpha.2",
+  "version": "2.1.0-alpha.4",
   "description": "LISA plugin for behavior testing",
   "main": "lib/main.js",
   "scripts": {
