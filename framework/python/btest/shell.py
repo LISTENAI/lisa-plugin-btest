@@ -52,7 +52,7 @@ class Shell:
                 return m,time_cha
             else:               # 若没找到则设置超时时间，到了超时时间未找到则退出
             	if timeout != -1 and time_cha > timeout:
-                	if debug: print('超时时间到了: ' + time.time() - time_start)
+                	if debug: print('超时时间到了: ' + str(time.time() - time_start))
                 	break
     def get_logfile(self, debug=False):
         while True:
