@@ -34,26 +34,35 @@ class Shell:
         self.flush()
         time.sleep(0.2)
 
-    def match(self, format=str, full_match =False, strip=True,timeout = 10):
+    def match(self, format=str, full_match =False, strip=True,timeout = 10, debug=False):
         time_start = time.time()
         while True:
             time_end =time.time()
             time_cha = time_end-time_start
             r = str(self.serial.readline(), 'utf-8', 'ignore')
-            print(f'serial_log:{r}')
+            if debug: print(f'串口日志: {r}')
+           
             if self.log_to is not None:
                 self.log_to.write(r)
             r = r.strip() if strip else r
             m = parse(format, r) if full_match else search(format, r)
             if m is not None:
-                print(f'result_found{m}')
+                if debug: print(f'期望值已经找到: {m}')
                 print(f'find logfile spend {time_cha}')
                 return m,time_cha
-            # else:               # 若没找到则设置超时时间，到了超时时间未找到则退出
-            if time_cha > timeout:
-                print('time_out_up')
+            else:               # 若没找到则设置超时时间，到了超时时间未找到则退出
+            	if timeout != -1 and time_cha > timeout:
+                	if debug: print('超时时间到了: ' + str(time.time() - time_start))
+                	break
+    def get_logfile(self, debug=False):
+        while True:
+
+            r = str(self.serial.readline(), 'utf-8')
+            if r == '':
                 break
-    
+            if debug: print(f'串口日志: {r}')
+            if self.log_to is not None:
+                self.log_to.write(r)
     def read(self, strip=True):
         text_str = ''
         for i in range(10000):

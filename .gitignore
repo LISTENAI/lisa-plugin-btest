@@ -10,3 +10,6 @@ lib
 
 /.idea
 /publish
+
+/framework/integration.json
+*.fuse
