@@ -12,6 +12,12 @@
  * @return .
  */
 
+/**
+ * @brief 定义一个shell实现函数
+ *
+ * @return .
+ */
+
 #define BTEST_CMD(cmd, help, handler) SHELL_CMD(cmd, NULL, help, handler)
 
 /**
@@ -21,6 +27,17 @@
  */
 
 #define BTEST_CMD_END SHELL_SUBCMD_SET_END
+/**
+ * @brief 定义一个shell实现模块
+ *
+ * @return .
+ */
+
+/**
+ * @brief shell实现模块
+ *
+ * @return .
+ */
 
 /**
  * @brief shell实现模块
