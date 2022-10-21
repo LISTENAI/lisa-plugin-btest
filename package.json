@@ -1,6 +1,6 @@
 {
   "name": "@lisa-plugin/btest",
-  "version": "2.2.0-alpha.1",
+  "version": "2.0.0",
   "description": "LISA plugin for behavior testing",
   "main": "lib/main.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "watch": "tsc -p . -w",
     "install": "node lib/install.js",
     "integration": "node lib/integration.js",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm run integration"
   },
   "files": [
     "lib",
