@@ -39,6 +39,12 @@
  * @return .
  */
 
+/**
+ * @brief shell实现模块
+ *
+ * @return .
+ */
+
 #define BTEST_MODULE(module, cmds...)                      \
 	SHELL_STATIC_SUBCMD_SET_CREATE(test_##module, ##cmds); \
 	SHELL_CMD_REGISTER(test_##module, &test_##module, "Test commands for " #module, NULL);
