@@ -10,4 +10,4 @@ export const PIP_INDEX_URL = 'https://pypi.tuna.tsinghua.edu.cn/simple';
 export const ENV_CACHE_DIR = resolve(LISA_BTEST_HOME, 'framework', 'python');
 export const CUSTOM_PYOCD_URL = 'https://cdn.iflyos.cn/public/lisa-binary/pyocd/pyocd-0.34.2.dev20-py3-none-any.whl';
 export const REQED_PACKAGES = ['parse', 'pyserial', 'pytest', 'pyyaml', 'tabulate', 'cbor>=1.0.0', 'psutil',
-    'pytest-html', 'allure-pytest'];
+    'pytest-html==3.2.0', 'allure-pytest==2.11.1'];
