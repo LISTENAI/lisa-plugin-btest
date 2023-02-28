@@ -20,8 +20,8 @@ export async function readProject(dir: string): Promise<Project | undefined> {
 
 export interface Device {
   probe: string;
-  shell?: string;
-  usb2xxx?: string;
+  shell?: string[];
+  usb2xxx?: string[];
 }
 
 /**

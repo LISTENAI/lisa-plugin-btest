@@ -1,5 +1,3 @@
-import { LisaType } from '../utils/lisa_ex';
-
 import test from './test';
 import project from './project';
 import dm from './dm';
