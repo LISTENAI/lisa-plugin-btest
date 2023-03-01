@@ -103,7 +103,7 @@ export default () => {
               name: 'shell',
               message: `选择调试器所对应的 Shell 设备`,
               choices: Object.keys(shells).map((shell) => ({
-                name: `${shells[shell].path} (${shell})`,
+                name: `${shells[shell].path} (${shells[shell].vendorId}:${shells[shell].productId} ${shells[shell].manufacturer})`,
                 value: shell,
               })),
             }]);
@@ -129,8 +129,6 @@ export default () => {
             }
             device.usb2xxx.push(usb2xxx);
           }
-
-          //if (device.shell && device.usb2xxx) break;
         }
         newMap.push(device);
       }
@@ -162,7 +160,7 @@ async function getProbeMap(): Promise<Record<string, Probe>> {
 async function getShellMap(): Promise<Record<string, Shell>> {
   const shells: Record<string, Shell> = {};
   for (const shell of await listShells()) {
-    shells[shell.serialNumber] = shell;
+    shells[shell.path] = shell;
   }
   return shells;
 }
@@ -191,7 +189,8 @@ async function printMapTable(deviceMap: Device[]): Promise<void> {
       let desc: string = "";
       switch (arrayType) {
         case "shell":
-          desc = validItems[assignedItem].path;
+          const thisValidItem = validItems[assignedItem];
+          desc = `${thisValidItem.vendorId}:${thisValidItem.productId} (${thisValidItem.manufacturer})`;
           break;
         default:
           break;
