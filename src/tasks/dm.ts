@@ -107,7 +107,13 @@ export default () => {
                 value: shell,
               })),
             }]);
-            device.shell = shell;
+            if (!device.shell) {
+              device.shell = [];
+            }
+            if (device.shell.includes(shell)) {
+              continue;
+            }
+            device.shell.push(shell);
           } else if (action == 'usb2xxx') {
             const { usb2xxx } = await prompt([{
               type: 'list',
@@ -115,10 +121,16 @@ export default () => {
               message: `选择调试器所对应的 USB2XXX 设备`,
               choices: Object.keys(adapters),
             }]);
-            device.usb2xxx = usb2xxx;
+            if (!device.usb2xxx) {
+              device.usb2xxx = [];
+            }
+            if (device.usb2xxx.includes(usb2xxx)) {
+              continue;
+            }
+            device.usb2xxx.push(usb2xxx);
           }
 
-          if (device.shell && device.usb2xxx) break;
+          //if (device.shell && device.usb2xxx) break;
         }
         newMap.push(device);
       }
@@ -172,14 +184,34 @@ async function printMapTable(deviceMap: Device[]): Promise<void> {
     }
   }
 
+  function formatArray(assignedItems: string[], validItems: Record<string, any>, arrayType: string): string {
+    let result: string[] = [];
+    for (const assignedItem of assignedItems) {
+      const isValid: boolean = !!validItems[assignedItem];
+      let desc: string = "";
+      switch (arrayType) {
+        case "shell":
+          desc = validItems[assignedItem].path;
+          break;
+        default:
+          break;
+      }
+
+      const itemResult: string = formatItem(assignedItem, isValid, () => desc);
+      result.push(itemResult);
+    }
+
+    return result.join('\n');
+  }
+
   const probes = await getProbeMap();
   const shells = await getShellMap();
   const adapters = await getAdapterMap();
 
   const output = deviceMap.map(({ probe, shell, usb2xxx }) => ({
     probe: formatItem(probe, !!probes[probe], () => `${probes[probe].vendor_name} ${probes[probe].product_name}`),
-    shell: shell ? formatItem(shell, !!shells[shell], () => `${shells[shell].path}`) : chalk.gray('未绑定'),
-    usb2xxx: usb2xxx ? formatItem(usb2xxx, !!adapters[usb2xxx], () => '') : chalk.gray('未绑定'),
+    shell: shell && shell.length > 0 ? formatArray(shell, shells, "shell") : chalk.gray('未绑定'),
+    usb2xxx: usb2xxx && usb2xxx.length > 0 ? formatArray(usb2xxx, adapters, "usb2xxx") : chalk.gray('未绑定'),
   }));
 
   CliUx.ux.table(output, {

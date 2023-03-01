@@ -4,11 +4,10 @@ from pyocd.core.helpers import ConnectHelper
 from usb2xxx import usb_device
 from . import shell as _shell
 import yaml
-
 import subprocess
 
 
-def pyocd_reset(cmd = "python -m pyocd reset -m hw",timeout =10,delayed =0):
+def pyocd_reset(cmd="python -m pyocd reset -m hw", timeout=10, delayed=0):
     """
     Execute command on local machine
     :param cmd:
@@ -19,13 +18,13 @@ def pyocd_reset(cmd = "python -m pyocd reset -m hw",timeout =10,delayed =0):
     print("**********************************")
     pro = subprocess.Popen(cmd, bufsize=10000, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
     result_str = ''
-    curline = pro.stdout.readline().decode('gbk')
+    curline = pro.stdout.readline().decode('utf-8')
     time_start = time.time()
     while curline != '':
         time_end = time.time()
         time_cha = time_end - time_start
         result_str += curline
-        curline = pro.stdout.readline().decode('gbk')
+        curline = pro.stdout.readline().decode('utf-8')
         if time_cha > timeout:
             break
     pro.wait()
@@ -35,13 +34,8 @@ def pyocd_reset(cmd = "python -m pyocd reset -m hw",timeout =10,delayed =0):
     return result_str
 
 
-
-
-
 def list_probes():
     return ConnectHelper.get_all_connected_probes(blocking=False, print_wait_message=False)
-
-
 
 
 def list_shells():
@@ -54,13 +48,35 @@ def list_usb2xxx():
     return handles[:ret]
 
 
-def load_device_map(file):
+def load_device_map(file) -> list:
+    result = []
+
     with open(file, 'r') as f:
+        this_yaml = yaml.safe_load(f)
+        for item in this_yaml:
+            this_item = {}
+            #probe
+            this_item['probe'] = item['probe']
+            #shell
+            if item.get('shell') is not None:
+                if type(item['shell']) is list:
+                    this_item['shell'] = item['shell']
+                else:
+                    this_item['shell'] = {}
+                    this_item['shell'][0] = item['shell']
+            #usb2xxx
+            if item.get('usb2xxx') is not None:
+                if type(item['usb2xxx']) is list:
+                    this_item['usb2xxx'] = item['usb2xxx']
+                else:
+                    this_item['usb2xxx'] = {}
+                    this_item['usb2xxx'][0] = item['usb2xxx']
 
-        return yaml.safe_load(f)
+            result.append(this_item)
+    
+    return result
 
-
-def load_devices(device_map):
+def load_devices(device_map) -> list:
     devices = load_device_map(device_map)
     probes = {p.unique_id for p in list_probes()}
     return [i for i in devices if i['probe'] in probes]
@@ -70,27 +86,17 @@ def shell_open(id, baudrate=115200):
     return _shell.shell_open(id, baudrate)
 
 
-
-# def shell_cmd(shell, module, cmd, wait=False):
 def shell_cmd(shell, cmd=True, wait=False):
-    # _shell.shell_exec(shell, 'test_%s %s %s %s %s' % (module, cmd, *args))
-    # _shell.Shell.exec(shell, 'test_%s %s %s %s %s %s' % (module, cmd, *args))
     if cmd:
-       
         _shell.Shell.exec(shell, '%s' % (cmd))
     else:
-       
-        read= _shell.Shell.read(shell)  # 只读
-        return read # 如果没有cmd传入，则只读，返回读到的文本
+        read = _shell.Shell.read(shell)  # 只读
+        return read  # 如果没有cmd传入，则只读，返回读到的文本
     if wait:
-        
-        # p = _shell.Shell.match(shell, 'pin_state:{}', full_match=True)
         if 'raw' in cmd:
-            # p = _shell.Shell.match(shell, 'pin_state:{}', full_match=True,3)
-            p = _shell.Shell.match(shell, 'pin_state: {}', False ,True  ,10)
-           
+            p = _shell.Shell.match(shell, 'pin_state: {}', False, True, 10)
         else:
-            p = _shell.Shell.match(shell, 'DONE:{}', False ,True  ,10)  # 如果是非INPUT的用例获取DOne的值，否则获取pin_state的值
+            p = _shell.Shell.match(shell, 'DONE:{}', False, True, 10)  # 如果是非INPUT的用例获取DOne的值，否则获取pin_state的值
         return int(p[0][0])
 
     # return 0

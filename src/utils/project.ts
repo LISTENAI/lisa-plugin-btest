@@ -18,10 +18,16 @@ export async function readProject(dir: string): Promise<Project | undefined> {
   }
 }
 
-export interface Device {
+interface DeviceV1 {
   probe: string;
   shell?: string;
-  usb2xxx?: string;
+  usb2xxx?: string | number;
+}
+
+export interface Device {
+  probe: string;
+  shell?: string[];
+  usb2xxx?: string[];
 }
 
 /**
@@ -32,7 +38,25 @@ export async function readDeviceMap(dir: string): Promise<Device[]> {
   const path = dir;
 
   if (await pathExists(path)) {
-    return load(await readFile(path, 'utf-8')) as Device[];
+    const devMapRawContent = await readFile(path, 'utf-8');
+    let devices: Device[] = load(devMapRawContent) as Device[];
+    if (devices.length > 0) {
+      const item = devices[0];
+      if ((item.shell && !Array.isArray(item.shell)) || (item.usb2xxx && !Array.isArray(item.usb2xxx))) {
+        const convertedDevices: Device[] = [];
+        const oldDevices: DeviceV1[] = load(devMapRawContent) as DeviceV1[];
+        for (const oldDevice of oldDevices) {
+          const newDeviceItem: Device = {
+            probe: oldDevice.probe,
+            shell: oldDevice.shell ? [ oldDevice.shell ] : undefined,
+            usb2xxx: oldDevice.usb2xxx ? [ oldDevice.usb2xxx.toString() ] : undefined
+          };
+          convertedDevices.push(newDeviceItem);
+        }
+        devices = convertedDevices;
+      }
+    }
+    return devices;
   } else {
     return [];
   }

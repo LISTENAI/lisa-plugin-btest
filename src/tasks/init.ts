@@ -32,7 +32,6 @@ export default () => {
             let testCaseConfigPath = join(btestPath, 'lisa-btest.yml');
             if (existsSync(testCasePath) || existsSync(testCaseConfigPath)) {
                 throw new Error(`指定的文件夹下已经存在测试用例。请指定另一个路径，然后重试。`);
-                return;
             }
 
             //create folder and put samples in there
