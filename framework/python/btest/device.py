@@ -48,7 +48,7 @@ def list_usb2xxx():
     return handles[:ret]
 
 
-def load_device_map(file):
+def load_device_map(file) -> list:
     result = []
 
     with open(file, 'r') as f:
@@ -76,7 +76,7 @@ def load_device_map(file):
     
     return result
 
-def load_devices(device_map):
+def load_devices(device_map) -> list:
     devices = load_device_map(device_map)
     probes = {p.unique_id for p in list_probes()}
     return [i for i in devices if i['probe'] in probes]
