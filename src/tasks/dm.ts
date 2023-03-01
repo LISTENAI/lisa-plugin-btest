@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import UsbDevice from 'usb2xxx';
 
 import { readDeviceMap, Device, writeDeviceMap } from '../utils/project';
-import { listProbes, Probe } from '../utils/pyocd';
+import { generateDummyProbes, listProbes, Probe } from '../utils/pyocd';
 import { listShells, Shell } from '../utils/shell';
 import workspace from '../utils/workspace';
 import parseArgs from "../utils/parseArgs";
@@ -74,9 +74,13 @@ export default () => {
 
       const newMap: Device[] = [];
 
-      const probes = await getProbeMap();
+      let probes = await getProbeMap();
       if (Object.keys(probes).length == 0) {
-        throw new Error(`没有找到已连接的调试器`);
+        console.log(`没有找到已连接的调试器，已加入模拟调试器！`);
+        console.log(`如果确定接入了真实设备，请按 Ctrl + C 后重新插拔设备再试！`);
+        for (const probe of await generateDummyProbes()) {
+          probes[probe.unique_id] = probe;
+        }
       }
 
       const shells = await getShellMap();

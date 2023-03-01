@@ -16,3 +16,16 @@ export async function listProbes(): Promise<Probe[]> {
   const probes = JSON.parse(stdout) as Probe[];
   return probes;
 }
+
+export async function generateDummyProbes(): Promise<Probe[]> {
+  const result: Probe[] = [];
+  result.push({
+    unique_id: "000000000000000000000000000000000000000000000000",
+    description: "dummy probe",
+    vendor_name: "listenai",
+    product_name: "dummy probe"
+  });
+  return result;
+}
+
+
