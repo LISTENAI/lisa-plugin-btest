@@ -4,6 +4,8 @@ from serial.tools import list_ports
 from parse import search, parse
 import serial
 import subprocess
+from . import out_put_color as print_color 
+import binascii
 
 
 def shell_list():
@@ -37,10 +39,10 @@ def shell_open(id, baudrate=115200, log_to=None):
 class Shell:
     serial = None
     log_to = None
-
     def __init__(self, serial, log_to=None):
         self.serial = serial
         self.log_to = log_to
+        self.color = print_color.output_color()
 
     def close(self):
         self.serial.close()
@@ -49,6 +51,14 @@ class Shell:
         self.serial.write(bytes('%s%s' % (cmd, end), encoding='utf-8'))
         self.flush()
         time.sleep(0.2)
+        print(f'发送串口协议: {self.color.cyan(cmd)}')
+
+
+    def exec_fromhex(self, cmd):
+        self.serial.write(bytes.fromhex(cmd))
+        self.flush()
+        time.sleep(0.2)
+        print(f'发送串口协议: {self.color.cyan(cmd)}')
 
     def match(self, format=str, full_match=False, strip=True, timeout=10, debug=False):
         time_start = time.time()
@@ -64,15 +74,38 @@ class Shell:
             r = r.strip() if strip else r
             m = parse(format, r) if full_match else search(format, r)
             if m is not None:
-                if debug:
-                    print(f'期望值已经找到: {m}')
+                if debug: print(f'期望值已经找到: {self.color.dave(format)}')
                 print(f'find logfile spend {time_cha}')
-                return m, time_cha
-            else:  # 若没找到则设置超时时间，到了超时时间未找到则退出
-                if timeout != -1 and time_cha > timeout:
-                    if debug:
-                        print('超时时间到了: ' + str(time.time() - time_start))
-                    break
+                return m,time_cha
+            else:               # 若没找到则设置超时时间，到了超时时间未找到则退出
+            	if timeout != -1 and time_cha > timeout:
+                	if debug: print('超时时间到了: ' + str(time.time() - time_start))
+                	break       
+                
+                     
+    def match_fromhex(self, format=str, full_match =False, strip=True,timeout = 10):
+        time_start = time.time()
+        while True:
+            time_end =time.time()
+            time_cha = time_end-time_start
+            r1 = self.serial.readline()
+        
+            r = str(binascii.b2a_hex(r1), encoding='utf-8').upper()
+            print(r)
+
+            if self.log_to is not None:
+                self.log_to.write(r)
+            r = r.strip() if strip else r
+            m = parse(format, r) if full_match else search(format, r)
+            if m is not None:
+                
+                print(f'result_found{m}')
+                print(f'find logfile spend {time_cha}')
+                return m,time_cha
+                
+            if time_cha > timeout:
+                print('time_out_up')
+                break
 
     def get_logfile(self, debug=False):
         while True:
@@ -95,7 +128,10 @@ class Shell:
             else:
                 break
         return text_str
-
+        
+    def read_hex(self):
+        text_str = self.serial.read_all()
+        return text_str
     def flush(self):
         self.serial.flush()
 
@@ -146,7 +182,6 @@ class Shell:
                 print('time_out')
                 break
             time.sleep(0.002)
-        # print(f'text_str_value {text_str}')
         c = text_str.split(start_format)[1]
         text_cut_out_str = c.split(end_format)[0]
         return text_str, text_cut_out_str
