@@ -92,4 +92,29 @@ export default () => {
       bottomBar: 5,
     },
   });
+
+  job('proj:devmap', {
+    title: 'device-map debug',
+    async task(ctx, task) {
+      const { args, printHelp } = parseArgs({
+        'with-device-map': { short: 'd', arg: 'with-device-map', help: '指定device-map.yml所在路径' },
+        'task-help': { short: 'h', help: '打印帮助' },
+      });
+      if (args['task-help']) {
+        return printHelp();
+      }
+
+      const path = workspace();
+      const devMapPath = resolve(args['with-device-map'] ?? join(path, 'device-map.yml'));
+      task.output = `Loading device-map from ${devMapPath}`;
+
+      const mapContent = await readDeviceMap(devMapPath);
+      let result: string = '';
+      for (const item of mapContent) {
+        result += `probe = ${item.probe}\nshell = ${item.shell?.join(',') ?? 'nothing'}\nusb2xxx = ${item.usb2xxx?.join(',') ?? 'nothing'}\n\n`;
+      }
+
+      task.title = result;
+    }
+  });
 }

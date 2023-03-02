@@ -3,6 +3,7 @@ import project from './project';
 import dm from './dm';
 import list from './list';
 import init from './init';
+import exec from './exec';
 
 export default () => {
   test();
@@ -10,4 +11,5 @@ export default () => {
   dm();
   list();
   init();
+  exec();
 };

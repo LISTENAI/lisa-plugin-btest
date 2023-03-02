@@ -1,4 +1,3 @@
-from fileinput import filename
 from pathlib import Path
 from datetime import datetime
 from random import randint
@@ -12,4 +11,4 @@ def logfile(dir, name):
     )
     path = Path(dir, filename)
     path.parent.mkdir(parents=True, exist_ok=True)
-    return open(path,'w',encoding='utf-8')
+    return open(path, 'w', encoding='utf-8')

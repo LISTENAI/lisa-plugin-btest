@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import UsbDevice from 'usb2xxx';
 
 import { readDeviceMap, Device, writeDeviceMap } from '../utils/project';
-import { listProbes, Probe } from '../utils/pyocd';
+import { generateDummyProbes, listProbes, Probe } from '../utils/pyocd';
 import { listShells, Shell } from '../utils/shell';
 import workspace from '../utils/workspace';
 import parseArgs from "../utils/parseArgs";
@@ -74,9 +74,13 @@ export default () => {
 
       const newMap: Device[] = [];
 
-      const probes = await getProbeMap();
+      let probes = await getProbeMap();
       if (Object.keys(probes).length == 0) {
-        throw new Error(`没有找到已连接的调试器`);
+        console.log(`没有找到已连接的调试器，已加入模拟调试器！`);
+        console.log(`如果确定接入了真实设备，请按 Ctrl + C 后重新插拔设备再试！`);
+        for (const probe of await generateDummyProbes()) {
+          probes[probe.unique_id] = probe;
+        }
       }
 
       const shells = await getShellMap();
@@ -103,11 +107,17 @@ export default () => {
               name: 'shell',
               message: `选择调试器所对应的 Shell 设备`,
               choices: Object.keys(shells).map((shell) => ({
-                name: `${shells[shell].path} (${shell})`,
+                name: `${shells[shell].path} (${shells[shell].vendorId}:${shells[shell].productId} ${shells[shell].manufacturer})`,
                 value: shell,
               })),
             }]);
-            device.shell = shell;
+            if (!device.shell) {
+              device.shell = [];
+            }
+            if (device.shell.includes(shell)) {
+              continue;
+            }
+            device.shell.push(shell);
           } else if (action == 'usb2xxx') {
             const { usb2xxx } = await prompt([{
               type: 'list',
@@ -115,10 +125,14 @@ export default () => {
               message: `选择调试器所对应的 USB2XXX 设备`,
               choices: Object.keys(adapters),
             }]);
-            device.usb2xxx = usb2xxx;
+            if (!device.usb2xxx) {
+              device.usb2xxx = [];
+            }
+            if (device.usb2xxx.includes(usb2xxx)) {
+              continue;
+            }
+            device.usb2xxx.push(usb2xxx);
           }
-
-          if (device.shell && device.usb2xxx) break;
         }
         newMap.push(device);
       }
@@ -150,7 +164,7 @@ async function getProbeMap(): Promise<Record<string, Probe>> {
 async function getShellMap(): Promise<Record<string, Shell>> {
   const shells: Record<string, Shell> = {};
   for (const shell of await listShells()) {
-    shells[shell.serialNumber] = shell;
+    shells[shell.path] = shell;
   }
   return shells;
 }
@@ -172,14 +186,35 @@ async function printMapTable(deviceMap: Device[]): Promise<void> {
     }
   }
 
+  function formatArray(assignedItems: string[], validItems: Record<string, any>, arrayType: string): string {
+    let result: string[] = [];
+    for (const assignedItem of assignedItems) {
+      const isValid: boolean = !!validItems[assignedItem];
+      let desc: string = "";
+      switch (arrayType) {
+        case "shell":
+          const thisValidItem = validItems[assignedItem];
+          desc = `${thisValidItem.vendorId}:${thisValidItem.productId} (${thisValidItem.manufacturer})`;
+          break;
+        default:
+          break;
+      }
+
+      const itemResult: string = formatItem(assignedItem, isValid, () => desc);
+      result.push(itemResult);
+    }
+
+    return result.join('\n');
+  }
+
   const probes = await getProbeMap();
   const shells = await getShellMap();
   const adapters = await getAdapterMap();
 
   const output = deviceMap.map(({ probe, shell, usb2xxx }) => ({
     probe: formatItem(probe, !!probes[probe], () => `${probes[probe].vendor_name} ${probes[probe].product_name}`),
-    shell: shell ? formatItem(shell, !!shells[shell], () => `${shells[shell].path}`) : chalk.gray('未绑定'),
-    usb2xxx: usb2xxx ? formatItem(usb2xxx, !!adapters[usb2xxx], () => '') : chalk.gray('未绑定'),
+    shell: shell && shell.length > 0 ? formatArray(shell, shells, "shell") : chalk.gray('未绑定'),
+    usb2xxx: usb2xxx && usb2xxx.length > 0 ? formatArray(usb2xxx, adapters, "usb2xxx") : chalk.gray('未绑定'),
   }));
 
   CliUx.ux.table(output, {
