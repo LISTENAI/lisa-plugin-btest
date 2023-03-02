@@ -77,9 +77,10 @@ def load_device_map(file) -> list:
     return result
 
 def load_devices(device_map) -> list:
+    dummy_probe_sn = "000000000000000000000000000000000000000000000000"
     devices = load_device_map(device_map)
     probes = {p.unique_id for p in list_probes()}
-    return [i for i in devices if i['probe'] in probes]
+    return [i for i in devices if i['probe'] in probes or i['probe'] == dummy_probe_sn]
 
 
 def shell_open(id, baudrate=115200):
