@@ -57,7 +57,7 @@ class Shell:
     def exec_fromhex(self, cmd):
         self.serial.write(bytes.fromhex(cmd))
         self.flush()
-        time.sleep(0.2)
+        # time.sleep(0.2)
         print(f'发送串口协议: {self.color.cyan(cmd)}')
 
     def match(self, format=str, full_match=False, strip=True, timeout=10, debug=False):
@@ -124,7 +124,7 @@ class Shell:
             n = self.serial.inWaiting()
             if n:
                 text_str += str(self.serial.read(n), 'utf-8', 'ignore')
-                print(f'text_str_value {text_str}')
+                # print(f'text_str_value {text_str}')
             else:
                 break
         return text_str
