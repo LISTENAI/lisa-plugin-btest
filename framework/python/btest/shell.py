@@ -50,7 +50,7 @@ class Shell:
     def exec(self, cmd, end='\n'):
         self.serial.write(bytes('%s%s' % (cmd, end), encoding='utf-8'))
         self.flush()
-        time.sleep(0.2)
+        # time.sleep(0.2)
         print(f'发送串口协议: {self.color.cyan(cmd)}')
 
 
