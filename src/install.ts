@@ -52,7 +52,11 @@ import download from "@xingrz/download2";
     "venv",
     PYTHON_VENV_DIR,
     "--upgrade-deps",
-  ]);
+  ], {
+    env: {
+      PIP_INDEX_URL: PIP_INDEX_URL
+    }
+  });
 
   //install default requirements
   console.log('Installing default packages...');
