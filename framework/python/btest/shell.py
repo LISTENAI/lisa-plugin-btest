@@ -31,6 +31,7 @@ def shell_open(id, baudrate=115200, log_to=None):
         port.timeout = 0.4
         port.stopbits = serial.STOPBITS_ONE
         port.bytesize = serial.EIGHTBITS
+        port.set_buffer_size(rx_size = 1000000,tx_size = 1000000)
         return Shell(port, log_to=log_to)
 
     return None
@@ -91,7 +92,7 @@ class Shell:
             r1 = self.serial.readline()
         
             r = str(binascii.b2a_hex(r1), encoding='utf-8').upper()
-            print(r)
+            
 
             if self.log_to is not None:
                 self.log_to.write(r)
