@@ -10,12 +10,12 @@ jobs:
       tarball: ${{ steps.build.outputs.tarball }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: 16
           cache: 'npm'
 
       - name: LPM Config
@@ -36,7 +36,7 @@ jobs:
           echo "tarball=$(npm pack)" >> $GITHUB_OUTPUT
 
       - name: Upload tarball
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.build.outputs.tarball }}
           path: ${{ steps.build.outputs.tarball }}
@@ -52,7 +52,7 @@ jobs:
 
     steps:
       - name: Set up Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -84,12 +84,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: 16
           cache: 'npm'
 
       - name: LPM Config
