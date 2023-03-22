@@ -6,6 +6,11 @@ import serial
 import subprocess
 from . import out_put_color as print_color 
 import binascii
+import platform
+
+platform_bool =False
+if(platform.system()=="Windows"):
+    platform_bool=True
 
 
 def shell_list():
@@ -31,7 +36,8 @@ def shell_open(id, baudrate=115200, log_to=None):
         port.timeout = 0.4
         port.stopbits = serial.STOPBITS_ONE
         port.bytesize = serial.EIGHTBITS
-        port.set_buffer_size(rx_size = 1000000,tx_size = 1000000)
+        if  platform_bool:
+            port.set_buffer_size(rx_size = 1000000,tx_size = 1000000)
         return Shell(port, log_to=log_to)
 
     return None
