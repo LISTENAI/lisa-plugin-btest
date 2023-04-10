@@ -4,6 +4,7 @@ import {FRAMEWORK_PACKAGE_DIR, PYTHON_VENV_DIR} from "../const";
 import {pathExists, readFile, rm} from "fs-extra";
 import {join} from "path";
 import {LisaType} from "../utils/lisa_ex";
+import {applyNewVersion, getLatestTagByProjectId, getProjectIdByName} from "../utils/framework";
 
 export default ({ got }: LisaType) => {
     job('use-env', {
@@ -18,9 +19,8 @@ export default ({ got }: LisaType) => {
                 return printHelp(["use-env [env_name@env_version] [--update]", "use-env --clear"]);
             }
 
-            const applyNewVersion = async (name: string, version: string, isInitNewEnvironment: boolean) => {
-
-            };
+            const execArgsIndex = process.argv.indexOf("use-env");
+            const execArgs = process.argv.slice(execArgsIndex + 1);
 
             if (args["clear"]) {
                 //clear environment
@@ -38,25 +38,40 @@ export default ({ got }: LisaType) => {
                 const projectId = pkgMetadata.repository.projectId;
 
                 try {
-                    const res = await got(`https://cloud.listenai.com/api/v4/projects/${projectId}/repository/tags`);
-                    const tags = (JSON.parse(res.body) as Array<any>).find(item => item.name && item.name.startsWith('v'));
+                    const updatedVersionRaw = await getLatestTagByProjectId(projectId, got);
+                    const updatedVersion = updatedVersionRaw.substring(1);
                     const localName = pkgMetadata.name;
                     const localVersion = pkgMetadata.version;
-                    const updatedVersion = tags.name.substring(1);
 
                     if (localVersion === updatedVersion) {
                         return (task.title = `当前环境 ${pkgMetadata.name} - ${localVersion} 已经是最新版本。`);
                     }
 
                     task.output = `当前版本：${localVersion}, 最新版本：${updatedVersion}`;
-                    await applyNewVersion(localName, updatedVersion, false);
+                    await applyNewVersion(localName, updatedVersion, false, task);
 
-                    return (task.title = 'exit');
+                    return (task.title = `当前环境: ${pkgMetadata.name} - ${localVersion}`);
                 } catch (e) {
                     throw new Error(`无法获得 ${pkgMetadata.name} 的版本信息。Error = ${e}`);
                 }
             } else {
+                //install new environment package
+                const packageInfo = execArgs[0];
+                let pkgName = packageInfo;
+                let pkgVersion = '0.0.0';
+                if (packageInfo.indexOf('@') >= 0) {
+                    const pkgInfoArray = packageInfo.split('@');
+                    pkgName = pkgInfoArray[0];
+                    pkgVersion = pkgVersion[1];
+                } else {
+                    const projectId = await getProjectIdByName(pkgName, got);
+                    pkgVersion = await getLatestTagByProjectId(projectId, got);
+                }
 
+                task.output = `正在安装 ${pkgName} - ${pkgVersion}`;
+                await applyNewVersion(pkgName, pkgVersion, true, task);
+
+                return (task.title = `当前环境: ${pkgName} - ${pkgVersion}`);
             }
 
             task.title = 'use-env exit';
