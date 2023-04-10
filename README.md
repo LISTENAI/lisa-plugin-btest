@@ -3,6 +3,16 @@ LISA B-Test Plugin [![test](https://github.com/LISTENAI/lisa-plugin-btest/action
 
 [![lpm-img]][lpm-url] [![issues][issues-img]][issues-url] [![stars][stars-img]][stars-url] [![commits][commits-img]][commits-url]
 
+## 请注意非兼容性更新
+
+我们正在 master 分支中准备 B-Test v3.x，此版本中的部分功能更新后可能之前的版本不兼容！
+
+在具体指引发布前，我们建议您使用 Releases 中的版本（如：[v2.3.1](https://github.com/LISTENAI/lisa-plugin-btest/releases/tag/v2.3.1)），避免在开发中出现问题！
+
+We are preparing B-Test v3.x **with breaking-changes features** in **master branch**.
+
+Before update instructions officially released, we strongly recommend all developers to install stable version(s) like [v2.3.1](https://github.com/LISTENAI/lisa-plugin-btest/releases/tag/v2.3.1) for avoiding possible breaks to current test-flows and / or configurations.
+
 ## 安装
 
 ```sh
