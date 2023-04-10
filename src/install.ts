@@ -7,8 +7,6 @@ import {
   PYTHON_VENV_DIR,
   PIP_INDEX_URL,
   ENV_CACHE_DIR,
-  CUSTOM_PYOCD_URL,
-  REQED_PACKAGES
 } from './const';
 import extendExec from './utils/extendExec';
 import makeEnv from './utils/makeEnv';
@@ -59,7 +57,7 @@ import download from "@xingrz/download2";
   });
 
   //install default requirements
-  console.log('Installing default packages...');
+  /*console.log('Installing default packages...');
   const pipPathPrefix = process.platform === 'win32' ?
       join(PYTHON_VENV_DIR, 'Scripts') : join(PYTHON_VENV_DIR, 'bin');
   const pipRegUrl = typeof(process.env.GITHUB_ACTIONS) !== "undefined" ?
@@ -76,7 +74,7 @@ import download from "@xingrz/download2";
       'install',
       CUSTOM_PYOCD_URL
   ]);
-  console.log("Isolated python environment ready!");
+  console.log("Isolated python environment ready!");*/
 
   //create env file
   await outputJSON(join(ENV_CACHE_DIR, 'cache.json'), await makeEnv());
