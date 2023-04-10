@@ -1,5 +1,5 @@
 import {readdirSync, readFileSync, statSync} from "fs";
-import {FRAMEWORK_DIR, PLUGIN_HOME, PYTHON_VENV_DIR} from "../const";
+import {FRAMEWORK_PACKAGE_DIR, PLUGIN_HOME, PYTHON_VENV_DIR} from "../const";
 import {BinaryLike, createHash} from "crypto";
 import {resolve} from "path";
 import {outputJSON, pathExists, readFile, unlink} from "fs-extra";
@@ -11,7 +11,7 @@ import { execFile as _execFile } from 'child_process';
  * @returns {Record<string,string>>} Integration check result (includes summary and details)
  */
 export async function doIntegrationCheck(): Promise<Record<string, string>> {
-    const integrationFilePath = resolve(FRAMEWORK_DIR, 'integration.json');
+    const integrationFilePath = resolve(FRAMEWORK_PACKAGE_DIR, 'integration.json');
     if (!await pathExists(integrationFilePath)) {
         return {
             "Framework Integration": "Failed - integration.json does not exist!"
@@ -30,7 +30,7 @@ export async function doIntegrationCheck(): Promise<Record<string, string>> {
         processed[k] = false;
     });
 
-    const fileList = getFiles(FRAMEWORK_DIR);
+    const fileList = getFiles(FRAMEWORK_PACKAGE_DIR);
     let fuse = true;
     for (const f of fileList) {
         if (!integrationList[f]) {
@@ -66,13 +66,13 @@ export async function doIntegrationCheck(): Promise<Record<string, string>> {
 export async function generateIntegrationFile(): Promise<void> {
     const result: Record<string, string> = {};
 
-    const files = getFiles(FRAMEWORK_DIR);
+    const files = getFiles(FRAMEWORK_PACKAGE_DIR);
     for (const f of files) {
         const hex = await getFileHashByPath(resolve(PLUGIN_HOME, f));
         result[f] = hex;
     }
 
-    const integrationFilePath = resolve(FRAMEWORK_DIR, 'integration.json');
+    const integrationFilePath = resolve(FRAMEWORK_PACKAGE_DIR, 'integration.json');
     if (await pathExists(integrationFilePath)) {
         await unlink(integrationFilePath);
     }
