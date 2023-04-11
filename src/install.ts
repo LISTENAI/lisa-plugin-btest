@@ -2,13 +2,11 @@ import { ensureDir, remove, symlink, outputJSON, pathExistsSync, mkdirp } from '
 import {join, resolve} from 'path';
 
 import {
-  FRAMEWORK_DIR,
+  ENVIRONMENT_DIR,
   LISA_BTEST_HOME,
   PYTHON_VENV_DIR,
   PIP_INDEX_URL,
   ENV_CACHE_DIR,
-  CUSTOM_PYOCD_URL,
-  REQED_PACKAGES
 } from './const';
 import extendExec from './utils/extendExec';
 import makeEnv from './utils/makeEnv';
@@ -18,7 +16,8 @@ import download from "@xingrz/download2";
 (async () => {
   await ensureDir(LISA_BTEST_HOME);
   await remove(join(LISA_BTEST_HOME, 'framework'));
-  await symlink(FRAMEWORK_DIR, join(LISA_BTEST_HOME, 'framework'));
+  await remove(join(LISA_BTEST_HOME, 'env'));
+  await symlink(ENVIRONMENT_DIR, join(LISA_BTEST_HOME, 'env'));
 
   //trigger @binary/python-3.9 download
   console.log('Downloading python3.9 binary...');
@@ -42,7 +41,7 @@ import download from "@xingrz/download2";
     await symlink('python3', join(pyPluginPath, 'bin', 'python'));
   }
 
-  //install python venv
+  /*//install python venv
   console.log('Preparing isolated python environment...');
   const exec = extendExec();
   const pyPathPrefix = process.platform === 'win32' ?
@@ -76,7 +75,7 @@ import download from "@xingrz/download2";
       'install',
       CUSTOM_PYOCD_URL
   ]);
-  console.log("Isolated python environment ready!");
+  console.log("Isolated python environment ready!");*/
 
   //create env file
   await outputJSON(join(ENV_CACHE_DIR, 'cache.json'), await makeEnv());

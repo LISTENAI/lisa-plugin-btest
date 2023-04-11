@@ -3,17 +3,18 @@
     "module": "commonjs",
     "target": "esnext",
     "rootDir": "src",
-    "outDir": "lib",
+    //"outDir": "lib",
+    "outDir": "D:\\projects\\lisa-SetupFiles\\r46\\lisa\\node_modules\\@lisa-plugin\\btest\\lib",
     "moduleResolution": "node",
     "strict": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "declaration": false,
     "types": [
-      "node",
-    ],
+      "node"
+    ]
   },
   "include": [
-    "src/**/*",
-  ],
+    "src/**/*"
+  ]
 }

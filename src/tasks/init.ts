@@ -4,7 +4,7 @@ import { mkdirpSync, cpSync, existsSync } from "fs-extra";
 
 import parseArgs from '../utils/parseArgs';
 import workspace from '../utils/workspace';
-import {FRAMEWORK_DIR} from "../const";
+import {FRAMEWORK_PACKAGE_DIR} from "../const";
 
 export default () => {
     job('init', {
@@ -37,8 +37,8 @@ export default () => {
             //create folder and put samples in there
             try {
                 mkdirpSync(join(btestPath, 'btests'));
-                cpSync(join(FRAMEWORK_DIR, 'templates', 'test_sample.py'), join(btestPath, 'btests', 'test_sample.py'));
-                cpSync(join(FRAMEWORK_DIR, 'templates', 'lisa-btest.yml'), join(btestPath, 'lisa-btest.yml'));
+                cpSync(join(FRAMEWORK_PACKAGE_DIR, 'templates', 'test_sample.py'), join(btestPath, 'btests', 'test_sample.py'));
+                cpSync(join(FRAMEWORK_PACKAGE_DIR, 'templates', 'lisa-btest.yml'), join(btestPath, 'lisa-btest.yml'));
             } catch (e) {
                 throw new Error(`btest项目初始化失败：\n${e}`);
             }
