@@ -46,13 +46,13 @@ export default ({ got }: LisaType) => {
                     const localVersion = localEnvironment.version;
 
                     if (localVersion === updatedVersion) {
-                        return (task.title = `当前环境 ${localName} - ${localVersion} 已经是最新版本。`);
+                        return (task.title = `当前环境 ${localName} (${localVersion}) 已经是最新版本。`);
                     }
 
                     task.output = `当前版本：${localVersion}, 最新版本：${updatedVersion}`;
                     await applyNewVersion(localName, updatedVersion, false, task, got);
 
-                    return (task.title = `当前环境: ${localName} - ${updatedVersion}`);
+                    return (task.title = `当前环境: ${localName} (${updatedVersion})`);
                 } catch (e) {
                     throw new Error(`无法获得 ${localEnvironment.name} 的版本信息。Error = ${e}`);
                 }
@@ -85,7 +85,7 @@ export default ({ got }: LisaType) => {
 
                 const updatedLocalEnvironment = await getLocalEnvironment();
 
-                return (task.title = `当前环境: ${updatedLocalEnvironment.name} - ${updatedLocalEnvironment.version}`);
+                return (task.title = `当前环境: ${updatedLocalEnvironment.name} (${updatedLocalEnvironment.version})`);
             }
 
             task.title = 'use-env exit';
