@@ -93,6 +93,7 @@ export function getFiles(dir: string, files_?: string[]): string[] {
     ignorePath.add('integration.json');
     ignorePath.add('cache.json');
     ignorePath.add('example');
+    ignorePath.add('.git');
     const ignoreExtensions = new Set();
     ignoreExtensions.add('.so');
     ignoreExtensions.add('.dll');
@@ -111,7 +112,7 @@ export function getFiles(dir: string, files_?: string[]): string[] {
         if (statSync(name).isDirectory()) {
             getFiles(name, files_);
         } else {
-            files_.push(name.replaceAll(PLUGIN_HOME, '').substring(1));
+            files_.push(name.replaceAll(PLUGIN_HOME, '').replaceAll('\\', '/').substring(1));
         }
     }
     return files_;

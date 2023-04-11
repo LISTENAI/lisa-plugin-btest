@@ -9,7 +9,7 @@ export async function env(): Promise<Record<string, string>> {
     const env = await getLocalEnvironment();
 
     return {
-        env: env.name ? `${env.name} (${env.version})` : '(缺失)',
+        env: env.name ? `${env.name} (${env.version})` : '(未设置)',
         venv: pythonVersion,
         pyocd: pyocdVersion,
         FRAMEWORK_DIR: FRAMEWORK_PACKAGE_DIR,
