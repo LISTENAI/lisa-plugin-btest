@@ -1,10 +1,13 @@
 import {job} from "@listenai/lisa_core/lib/task";
 import parseArgs from "../utils/parseArgs";
 import {FRAMEWORK_PACKAGE_DIR, PYTHON_VENV_DIR} from "../const";
-import {pathExists, readFile, rm} from "fs-extra";
-import {join} from "path";
+import {rm} from "fs-extra";
 import {LisaType} from "../utils/lisa_ex";
-import {applyNewVersion, getLatestTagByProjectId, getProjectIdByName} from "../utils/framework";
+import {
+    applyNewVersion,
+    getLatestTagByProjectId, getLocalEnvironment,
+    getProjectIdByName, LocalEnvironment
+} from "../utils/framework";
 
 export default ({ got }: LisaType) => {
     job('use-env', {
@@ -23,6 +26,7 @@ export default ({ got }: LisaType) => {
             const execArgs = process.argv.slice(execArgsIndex + 1);
 
             if (args["clear"]) {
+                task.output = '正在清理...';
                 //clear environment
                 await rm(PYTHON_VENV_DIR, { recursive: true, force: true, maxRetries: 10 });
                 await rm(FRAMEWORK_PACKAGE_DIR, { recursive: true, force: true, maxRetries: 10 });
@@ -30,31 +34,40 @@ export default ({ got }: LisaType) => {
                 return (task.title = '当前环境: (未设置)');
             } else if (args["update"]) {
                 //update environment
-                if (!(await pathExists(join(FRAMEWORK_PACKAGE_DIR, 'package.json')))) {
-                    throw new Error('当前没有设置环境，请使用 lisa btest use-env (环境名) 设置。');
-                }
-
-                const pkgMetadata = JSON.parse(await readFile(join(FRAMEWORK_PACKAGE_DIR, 'package.json'), 'utf-8'));
-                const projectId = pkgMetadata.repository.projectId;
+                const localEnvironment = await getLocalEnvironment();
 
                 try {
-                    const updatedVersionRaw = await getLatestTagByProjectId(projectId, got);
+                    const updatedVersionRaw = await getLatestTagByProjectId(localEnvironment.projectId, got);
                     const updatedVersion = updatedVersionRaw.substring(1);
-                    const localName = pkgMetadata.name;
-                    const localVersion = pkgMetadata.version;
+                    const localName = localEnvironment.name;
+                    const localVersion = localEnvironment.version;
 
                     if (localVersion === updatedVersion) {
-                        return (task.title = `当前环境 ${pkgMetadata.name} - ${localVersion} 已经是最新版本。`);
+                        return (task.title = `当前环境 ${localName} - ${localVersion} 已经是最新版本。`);
                     }
 
                     task.output = `当前版本：${localVersion}, 最新版本：${updatedVersion}`;
-                    await applyNewVersion(localName, updatedVersion, false, task);
+                    await applyNewVersion(localName, updatedVersion, false, task, got);
 
-                    return (task.title = `当前环境: ${pkgMetadata.name} - ${localVersion}`);
+                    return (task.title = `当前环境: ${localName} - ${localVersion}`);
                 } catch (e) {
-                    throw new Error(`无法获得 ${pkgMetadata.name} 的版本信息。Error = ${e}`);
+                    throw new Error(`无法获得 ${localEnvironment.name} 的版本信息。Error = ${e}`);
                 }
             } else {
+                //check if any environment installed previously
+                let localEnv: LocalEnvironment | undefined = undefined;
+                try {
+                    localEnv = await getLocalEnvironment();
+                } catch {
+                    //if error caught in this scenario, then no environment installed,
+                    //installation could proceed.
+                }
+                if (localEnv !== undefined) {
+                    throw new Error(`当前已安装环境 ${localEnv.name} - ${localEnv.version}，\n` +
+                        '如果需要安装新环境，请使用 lisa btest use-env --clear 指令卸载当前环境，然后继续安装。\n' +
+                        '如果需要升级此环境，请使用 lisa btest use-env --update 指令进行。');
+                }
+
                 //install new environment package
                 const packageInfo = execArgs[0];
                 let pkgName = packageInfo;
@@ -62,16 +75,18 @@ export default ({ got }: LisaType) => {
                 if (packageInfo.indexOf('@') >= 0) {
                     const pkgInfoArray = packageInfo.split('@');
                     pkgName = pkgInfoArray[0];
-                    pkgVersion = pkgVersion[1];
+                    pkgVersion = pkgInfoArray[1];
                 } else {
                     const projectId = await getProjectIdByName(pkgName, got);
                     pkgVersion = await getLatestTagByProjectId(projectId, got);
                 }
 
                 task.output = `正在安装 ${pkgName} - ${pkgVersion}`;
-                await applyNewVersion(pkgName, pkgVersion, true, task);
+                await applyNewVersion(pkgName, pkgVersion, true, task, got);
 
-                return (task.title = `当前环境: ${pkgName} - ${pkgVersion}`);
+                const updatedLocalEnvironment = await getLocalEnvironment();
+
+                return (task.title = `当前环境: ${updatedLocalEnvironment.name} - ${updatedLocalEnvironment.version}`);
             }
 
             task.title = 'use-env exit';

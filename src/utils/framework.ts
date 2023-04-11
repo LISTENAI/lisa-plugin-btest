@@ -1,11 +1,24 @@
 import extendExec from "./extendExec";
-import {rm} from "fs-extra";
+import {pathExists, readFile, rm} from "fs-extra";
 import {FRAMEWORK_PACKAGE_DIR, PIP_INDEX_URL, PYTHON_VENV_DIR} from "../const";
 import {join, resolve} from "path";
 
-export async function applyNewVersion (name: string, version: string, isInitNewEnvironment: boolean, task: any): Promise<void> {
+export type LocalEnvironment = {
+    name: string,
+    version: string,
+    projectId: number
+};
+
+export async function applyNewVersion (name: string, version: string, isInitNewEnvironment: boolean, task: any, got: any): Promise<void> {
     const gitUrl = `https://cloud.listenai.com/lisa-btest-env/${name}.git`;
     version = version.startsWith('v') ? version.substring(1) : version;
+
+    //check if env exists
+    const projectId = await getProjectIdByName(name, got);
+    //check if tag exists
+    if (!(await checkIfTagExistsByProjectId(version, projectId, got))) {
+        throw new Error(`环境包 ${name} 不存在版本 v${version}`);
+    }
 
     const exec = extendExec();
     if (isInitNewEnvironment) {
@@ -19,8 +32,7 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
         await exec(join(pyPathPrefix, 'python'), [
             "-m",
             "venv",
-            PYTHON_VENV_DIR,
-            "--upgrade-deps",
+            PYTHON_VENV_DIR
         ], {
             env: {
                 PIP_INDEX_URL: PIP_INDEX_URL
@@ -45,16 +57,19 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
     });
 
     //install requirements via pip
-    task.output = 'Installing default packages...';
+    task.output = 'Clearing existing packages...';
     const pipPathPrefix = process.platform === 'win32' ?
         join(PYTHON_VENV_DIR, 'Scripts') : join(PYTHON_VENV_DIR, 'bin');
     const pipRegUrl = typeof(process.env.GITHUB_ACTIONS) !== "undefined" ?
         'https://pypi.org/simple' : PIP_INDEX_URL;
+
+
+    task.output = 'Installing pip packages mentioned in requirements.txt...';
     const defPkgInsArgs = ['install', '-i', pipRegUrl, '-r', 'requirements.txt'];
     await exec(join(pipPathPrefix, 'pip'), defPkgInsArgs, {
         cwd: FRAMEWORK_PACKAGE_DIR
     });
-};
+}
 
 export async function getProjectIdByName(name: string, got: any): Promise<number> {
     try {
@@ -63,7 +78,7 @@ export async function getProjectIdByName(name: string, got: any): Promise<number
 
         return projectInfo[0].id;
     } catch (e) {
-        throw new Error(`Failed to fetch project ID by name! Error = ${e}`);
+        throw new Error(`无法获取环境包信息! Error = ${e}`);
     }
 }
 
@@ -74,6 +89,38 @@ export async function getLatestTagByProjectId(projectId: number, got: any): Prom
 
         return tag.name;
     } catch (e) {
-        throw new Error(`Failed to fetch tags by id! Error = ${e}`);
+        throw new Error(`无法获取环境包版本信息! Error = ${e}`);
     }
+}
+
+export async function checkIfTagExistsByProjectId(tag: string, projectId: number, got: any): Promise<boolean> {
+    try {
+        const tagsRaw = await got(`https://cloud.listenai.com/api/v4/projects/${projectId}/repository/tags?search=v${tag}`);
+        const targetTag = (JSON.parse(tagsRaw.body) as Array<any>).find(item => item.name && item.name === `v${tag}`);
+
+        return targetTag !== undefined
+    } catch (e) {
+        throw new Error(`无法找到版本 ${tag} ! Error = ${e}`);
+    }
+}
+
+export async function getLocalEnvironment(): Promise<LocalEnvironment> {
+    if (!(await pathExists(join(FRAMEWORK_PACKAGE_DIR, 'package.json')))) {
+        throw new Error('当前没有设置环境，请使用 lisa btest use-env (环境名) 设置。');
+    }
+
+    const pkgMetadata = JSON.parse(await readFile(join(FRAMEWORK_PACKAGE_DIR, 'package.json'), 'utf-8'));
+    const envName = pkgMetadata.name;
+    const envVersion = pkgMetadata.version;
+    const projectId = pkgMetadata.repository.projectId;
+
+    if (envName === undefined || envVersion === undefined || projectId === undefined) {
+        throw new Error('无法获取环境信息，请使用 lisa btest use-env --clear 和 lisa btest use-env (环境名) 指令重置环境。');
+    }
+
+    return {
+        name: envName,
+        version: envVersion,
+        projectId: projectId
+    };
 }
