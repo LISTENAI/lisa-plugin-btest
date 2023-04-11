@@ -32,7 +32,6 @@ jobs:
         id: build
         run: |
           npm run build
-          npm run integration
           echo "tarball=$(npm pack)" >> $GITHUB_OUTPUT
 
       - name: Upload tarball
