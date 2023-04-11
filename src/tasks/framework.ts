@@ -6,7 +6,7 @@ import {LisaType} from "../utils/lisa_ex";
 import {
     applyNewVersion,
     getLatestTagByProjectId, getLocalEnvironment,
-    getProjectIdByName, LocalEnvironment
+    getProjectIdByName
 } from "../utils/framework";
 
 export default ({ got }: LisaType) => {
@@ -52,7 +52,7 @@ export default ({ got }: LisaType) => {
                     task.output = `当前版本：${localVersion}, 最新版本：${updatedVersion}`;
                     await applyNewVersion(localName, updatedVersion, false, task, got);
 
-                    return (task.title = `当前环境: ${localName} - ${localVersion}`);
+                    return (task.title = `当前环境: ${localName} - ${updatedVersion}`);
                 } catch (e) {
                     throw new Error(`无法获得 ${localEnvironment.name} 的版本信息。Error = ${e}`);
                 }
@@ -60,12 +60,14 @@ export default ({ got }: LisaType) => {
                 //check if any environment installed previously
                 const localEnv = await getLocalEnvironment();
                 if (localEnv.isInfoCompleted) {
-                    throw new Error(`当前已安装环境 ${localEnv.name} - ${localEnv.version}，\n` +
-                        '如果需要安装新环境，请使用 lisa btest use-env --clear 指令卸载当前环境，然后继续安装。\n' +
-                        '如果需要升级此环境，请使用 lisa btest use-env --update 指令进行。');
+                    task.output = '正在清理...';
+                    //clear environment
+                    await rm(PYTHON_VENV_DIR, { recursive: true, force: true, maxRetries: 10 });
+                    await rm(FRAMEWORK_PACKAGE_DIR, { recursive: true, force: true, maxRetries: 10 });
                 }
 
                 //install new environment package
+                task.output = '正在准备更新...';
                 const packageInfo = execArgs[0];
                 let pkgName = packageInfo;
                 let pkgVersion = '0.0.0';

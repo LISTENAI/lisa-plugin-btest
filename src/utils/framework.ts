@@ -1,6 +1,6 @@
 import extendExec from "./extendExec";
-import {pathExists, readFile, rm} from "fs-extra";
-import {FRAMEWORK_PACKAGE_DIR, PIP_INDEX_URL, PYTHON_VENV_DIR} from "../const";
+import {outputJSON, pathExists, readFile, rm} from "fs-extra";
+import {ENV_CACHE_DIR, FRAMEWORK_PACKAGE_DIR, PIP_INDEX_URL, PYTHON_VENV_DIR} from "../const";
 import {join, resolve} from "path";
 import makeEnv from "./makeEnv";
 
@@ -41,7 +41,7 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
                 PIP_INDEX_URL: PIP_INDEX_URL
             }
         });
-        await makeEnv();
+        await outputJSON(join(ENV_CACHE_DIR, 'cache.json'), await makeEnv());
 
         //checkout environment package
         task.output = 'Checking out environment package...';
