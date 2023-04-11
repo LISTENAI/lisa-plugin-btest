@@ -144,13 +144,17 @@ export async function getFileHashByStream(fileStream: BinaryLike) : Promise<stri
  * @returns {string} python version
  */
 export async function getPythonVersion() : Promise<string> {
-    const venvBinPath = resolve(PYTHON_VENV_DIR,
-        process.platform == 'win32' ? 'Scripts' : 'bin',
-        process.platform == 'win32' ? 'python.exe' : 'python');
-    const execFile = promisify(_execFile);
+    try {
+        const venvBinPath = resolve(PYTHON_VENV_DIR,
+            process.platform == 'win32' ? 'Scripts' : 'bin',
+            process.platform == 'win32' ? 'python.exe' : 'python');
+        const execFile = promisify(_execFile);
 
-    const { stdout } = await execFile(venvBinPath, ['--version']);
-    return stdout.split('\n')[0].trim();
+        const { stdout } = await execFile(venvBinPath, ['--version']);
+        return stdout.split('\n')[0].trim();
+    } catch (e) {
+        return "(缺失)";
+    }
 }
 
 /**
@@ -158,11 +162,15 @@ export async function getPythonVersion() : Promise<string> {
  * @returns {string} pyocd version
  */
 export async function getPyocdVersion() : Promise<string> {
-    const venvBinPath = resolve(PYTHON_VENV_DIR,
-        process.platform == 'win32' ? 'Scripts' : 'bin',
-        process.platform == 'win32' ? 'pyocd.exe' : 'pyocd');
-    const execFile = promisify(_execFile);
+    try {
+        const venvBinPath = resolve(PYTHON_VENV_DIR,
+            process.platform == 'win32' ? 'Scripts' : 'bin',
+            process.platform == 'win32' ? 'pyocd.exe' : 'pyocd');
+        const execFile = promisify(_execFile);
 
-    const { stdout } = await execFile(venvBinPath, ['--version']);
-    return stdout.split('\n')[0].trim();
+        const { stdout } = await execFile(venvBinPath, ['--version']);
+        return stdout.split('\n')[0].trim();
+    } catch (e) {
+        return "(缺失)";
+    }
 }

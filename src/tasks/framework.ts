@@ -35,6 +35,9 @@ export default ({ got }: LisaType) => {
             } else if (args["update"]) {
                 //update environment
                 const localEnvironment = await getLocalEnvironment();
+                if (!localEnvironment.isInfoCompleted) {
+                    throw new Error('环境完整性校验失败，请使用 lisa btest use-env --clear 指令卸载后重新安装环境包。');
+                }
 
                 try {
                     const updatedVersionRaw = await getLatestTagByProjectId(localEnvironment.projectId, got);
@@ -55,14 +58,8 @@ export default ({ got }: LisaType) => {
                 }
             } else {
                 //check if any environment installed previously
-                let localEnv: LocalEnvironment | undefined = undefined;
-                try {
-                    localEnv = await getLocalEnvironment();
-                } catch {
-                    //if error caught in this scenario, then no environment installed,
-                    //installation could proceed.
-                }
-                if (localEnv !== undefined) {
+                const localEnv = await getLocalEnvironment();
+                if (localEnv.isInfoCompleted) {
                     throw new Error(`当前已安装环境 ${localEnv.name} - ${localEnv.version}，\n` +
                         '如果需要安装新环境，请使用 lisa btest use-env --clear 指令卸载当前环境，然后继续安装。\n' +
                         '如果需要升级此环境，请使用 lisa btest use-env --update 指令进行。');
@@ -78,10 +75,10 @@ export default ({ got }: LisaType) => {
                     pkgVersion = pkgInfoArray[1];
                 } else {
                     const projectId = await getProjectIdByName(pkgName, got);
-                    pkgVersion = await getLatestTagByProjectId(projectId, got);
+                    pkgVersion = (await getLatestTagByProjectId(projectId, got)).substring(1);
                 }
 
-                task.output = `正在安装 ${pkgName} - ${pkgVersion}`;
+                task.title = `正在安装 ${pkgName} - ${pkgVersion}`;
                 await applyNewVersion(pkgName, pkgVersion, true, task, got);
 
                 const updatedLocalEnvironment = await getLocalEnvironment();

@@ -2,11 +2,13 @@ import extendExec from "./extendExec";
 import {pathExists, readFile, rm} from "fs-extra";
 import {FRAMEWORK_PACKAGE_DIR, PIP_INDEX_URL, PYTHON_VENV_DIR} from "../const";
 import {join, resolve} from "path";
+import makeEnv from "./makeEnv";
 
 export type LocalEnvironment = {
     name: string,
     version: string,
-    projectId: number
+    projectId: number,
+    isInfoCompleted: boolean
 };
 
 export async function applyNewVersion (name: string, version: string, isInitNewEnvironment: boolean, task: any, got: any): Promise<void> {
@@ -32,12 +34,14 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
         await exec(join(pyPathPrefix, 'python'), [
             "-m",
             "venv",
-            PYTHON_VENV_DIR
+            PYTHON_VENV_DIR,
+            "--upgrade-deps"
         ], {
             env: {
                 PIP_INDEX_URL: PIP_INDEX_URL
             }
         });
+        await makeEnv();
 
         //checkout environment package
         task.output = 'Checking out environment package...';
@@ -106,21 +110,31 @@ export async function checkIfTagExistsByProjectId(tag: string, projectId: number
 
 export async function getLocalEnvironment(): Promise<LocalEnvironment> {
     if (!(await pathExists(join(FRAMEWORK_PACKAGE_DIR, 'package.json')))) {
-        throw new Error('当前没有设置环境，请使用 lisa btest use-env (环境名) 设置。');
+        return {
+            name: '',
+            version: '',
+            projectId: -1,
+            isInfoCompleted: false
+        };
     }
 
     const pkgMetadata = JSON.parse(await readFile(join(FRAMEWORK_PACKAGE_DIR, 'package.json'), 'utf-8'));
     const envName = pkgMetadata.name;
     const envVersion = pkgMetadata.version;
     const projectId = pkgMetadata.repository.projectId;
-
     if (envName === undefined || envVersion === undefined || projectId === undefined) {
-        throw new Error('无法获取环境信息，请使用 lisa btest use-env --clear 和 lisa btest use-env (环境名) 指令重置环境。');
+        return {
+            name: '',
+            version: '',
+            projectId: -1,
+            isInfoCompleted: false
+        };
     }
 
     return {
         name: envName,
         version: envVersion,
-        projectId: projectId
+        projectId: projectId,
+        isInfoCompleted: true
     };
 }
