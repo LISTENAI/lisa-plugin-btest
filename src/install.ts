@@ -12,7 +12,7 @@ import download from "@xingrz/download2";
   await ensureDir(LISA_BTEST_HOME);
   await remove(join(LISA_BTEST_HOME, 'framework'));
   await remove(join(LISA_BTEST_HOME, 'env'));
-  await symlink(ENVIRONMENT_DIR, join(LISA_BTEST_HOME, 'env'));
+  await symlink(ENVIRONMENT_DIR, join(LISA_BTEST_HOME, 'env'), 'dir');
 
   //trigger @binary/python-3.9 download
   console.log('Downloading python3.9 binary...');

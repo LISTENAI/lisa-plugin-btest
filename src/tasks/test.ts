@@ -7,6 +7,7 @@ import { forceCast } from '../utils/typing';
 import workspace from '../utils/workspace';
 import parseArgs from "../utils/parseArgs";
 import getEnv from "../utils/getEnv";
+import {isLocalEnvironmentConfigured} from "../utils/framework";
 
 export default () => {
   job('run', {
@@ -19,6 +20,10 @@ export default () => {
 
       if (args['task-help']) {
         return printHelp();
+      }
+
+      if (!await isLocalEnvironmentConfigured()) {
+        throw new Error('环境没有初始化！请使用 lisa btest use-env {环境包名} 初始化一个环境。');
       }
 
       const path = workspace();

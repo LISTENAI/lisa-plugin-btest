@@ -10,6 +10,8 @@ import { listShells, Shell } from '../utils/shell';
 import workspace from '../utils/workspace';
 import parseArgs from "../utils/parseArgs";
 import {join, resolve} from "path";
+import {getLocalEnvironment, isLocalEnvironmentConfigured} from "../utils/framework";
+import getEnv from "../utils/getEnv";
 
 export default () => {
   job('dm:show', {
@@ -24,6 +26,9 @@ export default () => {
         return printHelp();
       }
 
+      if (!await isLocalEnvironmentConfigured()) {
+        throw new Error('环境没有初始化！请使用 lisa btest use-env {环境包名} 初始化一个环境。');
+      }
       const path = resolve(args['with-device-map'] ?? join(workspace(), 'device-map.yml'));
 
       const deviceMap = await readDeviceMap(path);
@@ -55,6 +60,9 @@ export default () => {
         return printHelp();
       }
 
+      if (!await isLocalEnvironmentConfigured()) {
+        throw new Error('环境没有初始化！请使用 lisa btest use-env {环境包名} 初始化一个环境。');
+      }
       const path = resolve(args['output'] ?? join(workspace(), 'device-map.yml'));
 
       const deviceMap = await readDeviceMap(path);

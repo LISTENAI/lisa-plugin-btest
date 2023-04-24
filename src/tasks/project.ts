@@ -6,6 +6,7 @@ import parseArgs from '../utils/parseArgs';
 import { readDeviceMap, readProject } from '../utils/project';
 import { listProbes } from '../utils/pyocd';
 import workspace from '../utils/workspace';
+import {isLocalEnvironmentConfigured} from "../utils/framework";
 
 export default () => {
   job('proj:build', {
@@ -18,6 +19,10 @@ export default () => {
 
       if (args['task-help']) {
         return printHelp();
+      }
+
+      if (!await isLocalEnvironmentConfigured()) {
+        throw new Error('环境没有初始化！请使用 lisa btest use-env {环境包名} 初始化一个环境。');
       }
 
       const path = workspace();
@@ -53,6 +58,10 @@ export default () => {
       });
       if (args['task-help']) {
         return printHelp();
+      }
+
+      if (!await isLocalEnvironmentConfigured()) {
+        throw new Error('环境没有初始化！请使用 lisa btest use-env {环境包名} 初始化一个环境。');
       }
 
       const path = workspace();
@@ -102,6 +111,10 @@ export default () => {
       });
       if (args['task-help']) {
         return printHelp();
+      }
+
+      if (!await isLocalEnvironmentConfigured()) {
+        throw new Error('环境没有初始化！请使用 lisa btest use-env {环境包名} 初始化一个环境。');
       }
 
       const path = workspace();

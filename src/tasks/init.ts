@@ -5,6 +5,7 @@ import { mkdirpSync, cpSync, existsSync } from "fs-extra";
 import parseArgs from '../utils/parseArgs';
 import workspace from '../utils/workspace';
 import {FRAMEWORK_PACKAGE_DIR} from "../const";
+import {isLocalEnvironmentConfigured} from "../utils/framework";
 
 export default () => {
     job('init', {
@@ -17,6 +18,10 @@ export default () => {
 
             if (args['task-help']) {
                 return printHelp();
+            }
+
+            if (!await isLocalEnvironmentConfigured()) {
+                throw new Error('环境没有初始化！请使用 lisa btest use-env {环境包名} 初始化一个环境。');
             }
 
             //get optional btest project path, will be firmware project path if undefined

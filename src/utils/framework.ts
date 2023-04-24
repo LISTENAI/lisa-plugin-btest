@@ -75,6 +75,17 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
     });
 }
 
+export async function listProjects(got: any): Promise<Array<any>> {
+    try {
+        const projectsRaw = await got('https://cloud.listenai.com/api/v4/groups/1235/projects');
+        const projects: Array<any> = JSON.parse(projectsRaw.body);
+
+        return projects;
+    } catch (e) {
+        throw new Error(`无法获取环境包信息! Error = ${e}`);
+    }
+}
+
 export async function getProjectIdByName(name: string, got: any): Promise<number> {
     try {
         const projectInfoRaw = await got(`https://cloud.listenai.com/api/v4/groups/1235/projects?search=${name}`);
@@ -108,6 +119,14 @@ export async function checkIfTagExistsByProjectId(tag: string, projectId: number
     }
 }
 
+export async function isLocalEnvironmentConfigured() : Promise<boolean> {
+    try {
+        return await pathExists(join(FRAMEWORK_PACKAGE_DIR, 'package.json'));
+    } catch {
+        return false;
+    }
+}
+
 export async function getLocalEnvironment(): Promise<LocalEnvironment> {
     if (!(await pathExists(join(FRAMEWORK_PACKAGE_DIR, 'package.json')))) {
         return {
@@ -118,9 +137,25 @@ export async function getLocalEnvironment(): Promise<LocalEnvironment> {
         };
     }
 
+    let envVersion = '';
+    try {
+        const exec = extendExec();
+        const { stdout } = await exec('git', [ 'describe', '--tags', '--abbrev=0'], {
+            cwd: FRAMEWORK_PACKAGE_DIR
+        });
+        envVersion = stdout.includes('\n') ? stdout.split('\n')[0] : stdout;
+        envVersion = envVersion.startsWith('v') ? stdout.substring(1) : stdout;
+    } catch (e) {
+        return {
+            name: '',
+            version: '',
+            projectId: -1,
+            isInfoCompleted: false
+        };
+    }
+
     const pkgMetadata = JSON.parse(await readFile(join(FRAMEWORK_PACKAGE_DIR, 'package.json'), 'utf-8'));
     const envName = pkgMetadata.name;
-    const envVersion = pkgMetadata.version;
     const projectId = pkgMetadata.repository.projectId;
     if (envName === undefined || envVersion === undefined || projectId === undefined) {
         return {
