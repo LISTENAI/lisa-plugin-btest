@@ -1,6 +1,11 @@
 import extendExec from "./extendExec";
-import {outputJSON, pathExists, readFile, rm} from "fs-extra";
-import {ENV_CACHE_DIR, FRAMEWORK_PACKAGE_DIR, PIP_INDEX_URL, PYTHON_VENV_DIR} from "../const";
+import {ensureDir, outputJSON, pathExists, readFile, remove, rm, symlink} from "fs-extra";
+import {
+    ENV_CACHE_DIR,
+    FRAMEWORK_PACKAGE_DIR,
+    PIP_INDEX_URL,
+    PYTHON_VENV_DIR
+} from "../const";
 import {join, resolve} from "path";
 import makeEnv from "./makeEnv";
 
@@ -26,6 +31,7 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
     if (isInitNewEnvironment) {
         //initialize python venv
         await rm(PYTHON_VENV_DIR, { recursive: true, force: true, maxRetries: 10 });
+        await ensureDir(PYTHON_VENV_DIR);
 
         task.output = 'Preparing isolated python environment...';
         const pyPluginPath = resolve(__dirname, '..', '..', 'node_modules', '@binary', 'python-3.9', 'binary');
