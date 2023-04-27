@@ -16,9 +16,9 @@ import download from "@xingrz/download2";
     await symlink(ENVIRONMENT_DIR, join(LISA_BTEST_HOME, 'env'), 'dir');
   } catch (e) {
     if (process.platform === 'win32') {
-      throw new Error('创建软链接失败，请使用管理员权限打开 cmd / powershell 然后再试一次。');
+      throw new Error('环境目录结构初始化失败，请使用管理员权限打开 cmd / powershell 然后再试一次。');
     } else {
-      throw new Error('创建软链接失败，请检查目录权限然后再试一次。');
+      throw new Error('环境目录结构初始化失败，请检查目录权限然后再试一次。');
     }
   }
 
