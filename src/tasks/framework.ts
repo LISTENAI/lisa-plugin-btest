@@ -6,7 +6,7 @@ import {LisaType} from "../utils/lisa_ex";
 import {
     applyNewVersion,
     getLatestTagByProjectId, getLocalEnvironment,
-    getProjectIdByName
+    getProjectIdByName, listProjects
 } from "../utils/framework";
 
 export default ({ got }: LisaType) => {
@@ -16,10 +16,11 @@ export default ({ got }: LisaType) => {
             const { args, printHelp } = parseArgs({
                 clear: { help: "清除设置" },
                 update: { help: "更新环境" },
+                list: { short: 'l', help: '列出所有可用环境' },
                 'task-help': { short: 'h', help: '打印帮助' },
             });
             if (args['task-help']) {
-                return printHelp(["use-env [env_name@env_version] [--update]", "use-env --clear"]);
+                return printHelp(["use-env [env_name@env_version] [--update]", "use-env --clear", "use-env --list"]);
             }
 
             const execArgsIndex = process.argv.indexOf("use-env");
@@ -56,6 +57,15 @@ export default ({ got }: LisaType) => {
                 } catch (e) {
                     throw new Error(`无法获得 ${localEnvironment.name} 的版本信息。Error = ${e}`);
                 }
+            } else if (args["list"]) {
+                let outputResult = "=== 可用环境包 ===\n";
+                const result = await listProjects(got);
+                for (const p of result) {
+                    outputResult += p.name + '\n';
+                }
+
+                return (task.title = outputResult);
+
             } else {
                 //check if any environment installed previously
                 const localEnv = await getLocalEnvironment();

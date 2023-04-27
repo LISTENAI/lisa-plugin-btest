@@ -1,6 +1,6 @@
 {
   "name": "@lisa-plugin/btest",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-beta.2",
   "description": "LISA plugin for behavior testing",
   "main": "lib/main.js",
   "scripts": {
@@ -45,10 +45,7 @@
     "inquirer": "^8.2.1",
     "js-yaml": "^4.1.0",
     "serialport": "^10.4.0",
-    "usb2xxx": "^1.0.0-alpha.7",
-    "@xingrz/download2": "^9.0.0-alpha.4",
-    "ejs": ">=3.1.7",
-    "got": ">=11.8.5"
+    "usb2xxx": "^1.0.0-alpha.7"
   },
   "devDependencies": {
     "@types/inquirer": "^8.2.0",

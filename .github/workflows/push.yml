@@ -68,6 +68,9 @@ jobs:
         env:
           PYTHON_BIN_URL_TEMPLATE: ${{ secrets.PYTHON_BIN_URL_TEMPLATE }}
 
+      - name: Install legacy package
+        run: lisa btest use-env legacy
+
       - name: Test list:shell
         run: lisa btest list:shell
 
