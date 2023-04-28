@@ -37,16 +37,21 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
         const pyPluginPath = resolve(__dirname, '..', '..', 'node_modules', '@binary', 'python-3.9', 'binary');
         const pyPathPrefix = process.platform === 'win32' ?
             pyPluginPath : join(pyPluginPath, 'bin');
-        await exec(join(pyPathPrefix, 'python'), [
-            "-m",
-            "venv",
-            PYTHON_VENV_DIR,
-            "--upgrade-deps"
-        ], {
-            env: {
-                PIP_INDEX_URL: PIP_INDEX_URL
-            }
-        });
+        try {
+            await exec(join(pyPathPrefix, 'python'), [
+                "-m",
+                "venv",
+                PYTHON_VENV_DIR,
+                "--upgrade-deps"
+            ], {
+                env: {
+                    PIP_INDEX_URL: PIP_INDEX_URL
+                }
+            });
+        } catch (e) {
+            throw new Error('Python虚拟环境初始化失败，请检查网络状态。');
+        }
+
         await outputJSON(join(ENV_CACHE_DIR, 'cache.json'), await makeEnv());
 
         //checkout environment package
@@ -103,10 +108,12 @@ export async function getProjectIdByName(name: string, got: any): Promise<number
     }
 }
 
-export async function getLatestTagByProjectId(projectId: number, got: any): Promise<string> {
+export async function getLatestTagByProjectId(projectId: number, isBeta: boolean, got: any): Promise<string> {
     try {
         const tagsRaw = await got(`https://cloud.listenai.com/api/v4/projects/${projectId}/repository/tags`);
-        const tag = (JSON.parse(tagsRaw.body) as Array<any>).find(item => item.name && item.name.startsWith('v'));
+        const tagResultRaw: Array<any> = JSON.parse(tagsRaw.body) as Array<any>;
+        const tag = isBeta ? tagResultRaw.find(item => item.name && item.name.startsWith('v') && item.name.includes('-')) :
+            tagResultRaw.find(item => item.name && item.name.startsWith('v') && !item.name.includes('-'));
 
         return tag.name;
     } catch (e) {

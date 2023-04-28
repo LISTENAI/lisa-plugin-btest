@@ -41,7 +41,8 @@ export default ({ got }: LisaType) => {
                 }
 
                 try {
-                    const updatedVersionRaw = await getLatestTagByProjectId(localEnvironment.projectId, got);
+                    const isBeta = process.env.LISA_ENV === 'debug';
+                    const updatedVersionRaw = await getLatestTagByProjectId(localEnvironment.projectId, isBeta, got);
                     const updatedVersion = updatedVersionRaw.substring(1);
                     const localName = localEnvironment.name;
                     const localVersion = localEnvironment.version;
@@ -87,10 +88,11 @@ export default ({ got }: LisaType) => {
                     pkgVersion = pkgInfoArray[1];
                 } else {
                     const projectId = await getProjectIdByName(pkgName, got);
-                    pkgVersion = (await getLatestTagByProjectId(projectId, got)).substring(1);
+                    const isBeta = process.env.LISA_ENV === 'debug';
+                    pkgVersion = (await getLatestTagByProjectId(projectId, isBeta, got)).substring(1);
                 }
 
-                task.title = `正在安装 ${pkgName} - ${pkgVersion}`;
+                task.title = `正在安装 ${pkgName} (${pkgVersion})`;
                 await applyNewVersion(pkgName, pkgVersion, true, task, got);
 
                 const updatedLocalEnvironment = await getLocalEnvironment();
