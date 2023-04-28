@@ -68,19 +68,14 @@ export default ({ got }: LisaType) => {
                 return (task.title = outputResult);
 
             } else {
+                const packageInfo = execArgs[0];
+                let pkgName = packageInfo;
+
                 //check if any environment installed previously
                 const localEnv = await getLocalEnvironment();
-                if (localEnv.isInfoCompleted) {
-                    task.output = '正在清理...';
-                    //clear environment
-                    await rm(PYTHON_VENV_DIR, { recursive: true, force: true, maxRetries: 10 });
-                    await rm(FRAMEWORK_PACKAGE_DIR, { recursive: true, force: true, maxRetries: 10 });
-                }
 
                 //install new environment package
                 task.output = '正在准备更新...';
-                const packageInfo = execArgs[0];
-                let pkgName = packageInfo;
                 let pkgVersion = '0.0.0';
                 if (packageInfo.indexOf('@') >= 0) {
                     const pkgInfoArray = packageInfo.split('@');
@@ -93,7 +88,7 @@ export default ({ got }: LisaType) => {
                 }
 
                 task.title = `正在安装 ${pkgName} (${pkgVersion})`;
-                await applyNewVersion(pkgName, pkgVersion, true, task, got);
+                await applyNewVersion(pkgName, pkgVersion, pkgName !== localEnv.name, task, got);
 
                 const updatedLocalEnvironment = await getLocalEnvironment();
 

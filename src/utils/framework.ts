@@ -31,7 +31,9 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
     if (isInitNewEnvironment) {
         //initialize python venv
         await rm(PYTHON_VENV_DIR, { recursive: true, force: true, maxRetries: 10 });
+        await rm(FRAMEWORK_PACKAGE_DIR, { recursive: true, force: true, maxRetries: 10 });
         await ensureDir(PYTHON_VENV_DIR);
+        await ensureDir(FRAMEWORK_PACKAGE_DIR);
 
         task.output = 'Preparing isolated python environment...';
         const pyPluginPath = resolve(__dirname, '..', '..', 'node_modules', '@binary', 'python-3.9', 'binary');
@@ -76,14 +78,11 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
     });
 
     //install requirements via pip
-    task.output = 'Clearing existing packages...';
+    task.output = 'Installing pip packages mentioned in requirements.txt...';
     const pipPathPrefix = process.platform === 'win32' ?
         join(PYTHON_VENV_DIR, 'Scripts') : join(PYTHON_VENV_DIR, 'bin');
     const pipRegUrl = typeof(process.env.GITHUB_ACTIONS) !== "undefined" ?
         'https://pypi.org/simple' : PIP_INDEX_URL;
-
-
-    task.output = 'Installing pip packages mentioned in requirements.txt...';
     const defPkgInsArgs = ['install', '-i', pipRegUrl, '-r', 'requirements.txt'];
     await exec(join(pipPathPrefix, 'pip'), defPkgInsArgs, {
         cwd: FRAMEWORK_PACKAGE_DIR
