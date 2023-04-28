@@ -49,7 +49,11 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
                 }
             });
         } catch (e) {
-            throw new Error('Python虚拟环境初始化失败，请检查网络状态。');
+            if ((e as Error).message.includes('check_hostname requires server_hostname')) {
+                throw new Error(`Python虚拟环境初始化失败，请检查网络状态。`);
+            } else {
+                throw new Error(`Python虚拟环境初始化失败。Error = ${e}`);
+            }
         }
 
         await outputJSON(join(ENV_CACHE_DIR, 'cache.json'), await makeEnv());
@@ -114,6 +118,10 @@ export async function getLatestTagByProjectId(projectId: number, isBeta: boolean
         const tagResultRaw: Array<any> = JSON.parse(tagsRaw.body) as Array<any>;
         const tag = isBeta ? tagResultRaw.find(item => item.name && item.name.startsWith('v') && item.name.includes('-')) :
             tagResultRaw.find(item => item.name && item.name.startsWith('v') && !item.name.includes('-'));
+        if (tag === undefined) {
+            const channelName = isBeta ? '测试版本' : '稳定版本';
+            throw new Error(`${channelName}通道中没有发布任何版本`);
+        }
 
         return tag.name;
     } catch (e) {
