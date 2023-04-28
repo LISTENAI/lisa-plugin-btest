@@ -81,6 +81,10 @@ export default ({ got }: LisaType) => {
                     const pkgInfoArray = packageInfo.split('@');
                     pkgName = pkgInfoArray[0];
                     pkgVersion = pkgInfoArray[1];
+
+                    if (pkgName.length == 0 || pkgVersion.length < 5) {
+                        throw new Error('环境包名称/版本不正确');
+                    }
                 } else {
                     const projectId = await getProjectIdByName(pkgName, got);
                     const isBeta = process.env.LISA_ENV === 'debug';
