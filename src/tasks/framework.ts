@@ -41,7 +41,8 @@ export default ({ got }: LisaType) => {
                 }
 
                 try {
-                    const updatedVersionRaw = await getLatestTagByProjectId(localEnvironment.projectId, got);
+                    const isBeta = process.env.LISA_ENV === 'debug';
+                    const updatedVersionRaw = await getLatestTagByProjectId(localEnvironment.projectId, isBeta, got);
                     const updatedVersion = updatedVersionRaw.substring(1);
                     const localName = localEnvironment.name;
                     const localVersion = localEnvironment.version;
@@ -67,31 +68,31 @@ export default ({ got }: LisaType) => {
                 return (task.title = outputResult);
 
             } else {
+                const packageInfo = execArgs[0];
+                let pkgName = packageInfo;
+
                 //check if any environment installed previously
                 const localEnv = await getLocalEnvironment();
-                if (localEnv.isInfoCompleted) {
-                    task.output = '正在清理...';
-                    //clear environment
-                    await rm(PYTHON_VENV_DIR, { recursive: true, force: true, maxRetries: 10 });
-                    await rm(FRAMEWORK_PACKAGE_DIR, { recursive: true, force: true, maxRetries: 10 });
-                }
 
                 //install new environment package
                 task.output = '正在准备更新...';
-                const packageInfo = execArgs[0];
-                let pkgName = packageInfo;
                 let pkgVersion = '0.0.0';
                 if (packageInfo.indexOf('@') >= 0) {
                     const pkgInfoArray = packageInfo.split('@');
                     pkgName = pkgInfoArray[0];
                     pkgVersion = pkgInfoArray[1];
+
+                    if (pkgName.length == 0 || pkgVersion.length < 5) {
+                        throw new Error('环境包名称/版本不正确');
+                    }
                 } else {
                     const projectId = await getProjectIdByName(pkgName, got);
-                    pkgVersion = (await getLatestTagByProjectId(projectId, got)).substring(1);
+                    const isBeta = process.env.LISA_ENV === 'debug';
+                    pkgVersion = (await getLatestTagByProjectId(projectId, isBeta, got)).substring(1);
                 }
 
-                task.title = `正在安装 ${pkgName} - ${pkgVersion}`;
-                await applyNewVersion(pkgName, pkgVersion, true, task, got);
+                task.title = `正在安装 ${pkgName} (${pkgVersion})`;
+                await applyNewVersion(pkgName, pkgVersion, pkgName !== localEnv.name, task, got);
 
                 const updatedLocalEnvironment = await getLocalEnvironment();
 

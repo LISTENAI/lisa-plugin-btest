@@ -31,22 +31,33 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
     if (isInitNewEnvironment) {
         //initialize python venv
         await rm(PYTHON_VENV_DIR, { recursive: true, force: true, maxRetries: 10 });
+        await rm(FRAMEWORK_PACKAGE_DIR, { recursive: true, force: true, maxRetries: 10 });
         await ensureDir(PYTHON_VENV_DIR);
+        await ensureDir(FRAMEWORK_PACKAGE_DIR);
 
         task.output = 'Preparing isolated python environment...';
         const pyPluginPath = resolve(__dirname, '..', '..', 'node_modules', '@binary', 'python-3.9', 'binary');
         const pyPathPrefix = process.platform === 'win32' ?
             pyPluginPath : join(pyPluginPath, 'bin');
-        await exec(join(pyPathPrefix, 'python'), [
-            "-m",
-            "venv",
-            PYTHON_VENV_DIR,
-            "--upgrade-deps"
-        ], {
-            env: {
-                PIP_INDEX_URL: PIP_INDEX_URL
+        try {
+            await exec(join(pyPathPrefix, 'python'), [
+                "-m",
+                "venv",
+                PYTHON_VENV_DIR,
+                "--upgrade-deps"
+            ], {
+                env: {
+                    PIP_INDEX_URL: PIP_INDEX_URL
+                }
+            });
+        } catch (e) {
+            if ((e as Error).message.includes('check_hostname requires server_hostname')) {
+                throw new Error(`Python虚拟环境初始化失败，请检查网络状态。`);
+            } else {
+                throw new Error(`Python虚拟环境初始化失败。Error = ${e}`);
             }
-        });
+        }
+
         await outputJSON(join(ENV_CACHE_DIR, 'cache.json'), await makeEnv());
 
         //checkout environment package
@@ -67,14 +78,11 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
     });
 
     //install requirements via pip
-    task.output = 'Clearing existing packages...';
+    task.output = 'Installing pip packages mentioned in requirements.txt...';
     const pipPathPrefix = process.platform === 'win32' ?
         join(PYTHON_VENV_DIR, 'Scripts') : join(PYTHON_VENV_DIR, 'bin');
     const pipRegUrl = typeof(process.env.GITHUB_ACTIONS) !== "undefined" ?
         'https://pypi.org/simple' : PIP_INDEX_URL;
-
-
-    task.output = 'Installing pip packages mentioned in requirements.txt...';
     const defPkgInsArgs = ['install', '-i', pipRegUrl, '-r', 'requirements.txt'];
     await exec(join(pipPathPrefix, 'pip'), defPkgInsArgs, {
         cwd: FRAMEWORK_PACKAGE_DIR
@@ -103,10 +111,16 @@ export async function getProjectIdByName(name: string, got: any): Promise<number
     }
 }
 
-export async function getLatestTagByProjectId(projectId: number, got: any): Promise<string> {
+export async function getLatestTagByProjectId(projectId: number, isBeta: boolean, got: any): Promise<string> {
     try {
         const tagsRaw = await got(`https://cloud.listenai.com/api/v4/projects/${projectId}/repository/tags`);
-        const tag = (JSON.parse(tagsRaw.body) as Array<any>).find(item => item.name && item.name.startsWith('v'));
+        const tagResultRaw: Array<any> = JSON.parse(tagsRaw.body) as Array<any>;
+        const tag = isBeta ? tagResultRaw.find(item => item.name && item.name.startsWith('v') && item.name.includes('-')) :
+            tagResultRaw.find(item => item.name && item.name.startsWith('v') && !item.name.includes('-'));
+        if (tag === undefined) {
+            const channelName = isBeta ? '测试版本' : '稳定版本';
+            throw new Error(`${channelName}通道中没有发布任何版本`);
+        }
 
         return tag.name;
     } catch (e) {
