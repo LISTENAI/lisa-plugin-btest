@@ -1,5 +1,5 @@
 import extendExec from "./extendExec";
-import {ensureDir, outputJSON, pathExists, readFile, remove, rm, symlink} from "fs-extra";
+import {ensureDir, outputJSON, pathExists, pathExistsSync, readFile, rm} from "fs-extra";
 import {
     ENV_CACHE_DIR,
     FRAMEWORK_PACKAGE_DIR,
@@ -8,6 +8,7 @@ import {
 } from "../const";
 import {join, resolve} from "path";
 import makeEnv from "./makeEnv";
+import {readdirSync} from "fs";
 
 export type LocalEnvironment = {
     name: string,
@@ -26,6 +27,9 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
     if (!(await checkIfTagExistsByProjectId(version, projectId, got))) {
         throw new Error(`环境包 ${name} 不存在版本 v${version}`);
     }
+    //check if env dir exists
+    const envPackDir = join(FRAMEWORK_PACKAGE_DIR, name);
+    const isEnvPackMetadataExists = await pathExists(join(envPackDir, 'package.json'));
 
     const exec = extendExec();
     if (isInitNewEnvironment) {
@@ -52,29 +56,29 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
             });
         } catch (e) {
             if ((e as Error).message.includes('check_hostname requires server_hostname')) {
-                throw new Error(`Python虚拟环境初始化失败，请检查网络状态。`);
+                throw new Error(`Python 虚拟环境初始化失败，请检查网络状态。`);
             } else {
-                throw new Error(`Python虚拟环境初始化失败。Error = ${e}`);
+                throw new Error(`Python 虚拟环境初始化失败。Error = ${e}`);
             }
         }
+    }
 
-        await outputJSON(join(ENV_CACHE_DIR, 'cache.json'), await makeEnv());
-
-        //checkout environment package
+    //checkout environment package
+    if (!isEnvPackMetadataExists) {
         task.output = 'Checking out environment package...';
-        await exec('git', [ 'clone', '-b', `v${version}`, gitUrl, FRAMEWORK_PACKAGE_DIR ]);
+        await exec('git', [ 'clone', '-b', `v${version}`, gitUrl, envPackDir ]);
     }
 
     //update environment package
     task.output = `Updating ${name} to ${version}...`;
     await exec('git', [ 'fetch', 'origin' ], {
-        cwd: FRAMEWORK_PACKAGE_DIR
+        cwd: envPackDir
     });
     await exec('git', [ 'checkout', `v${version}` ], {
-        cwd: FRAMEWORK_PACKAGE_DIR
+        cwd: envPackDir
     });
     await exec('git', [ 'pull', 'origin', `v${version}` ], {
-        cwd: FRAMEWORK_PACKAGE_DIR
+        cwd: envPackDir
     });
 
     //install requirements via pip
@@ -85,8 +89,11 @@ export async function applyNewVersion (name: string, version: string, isInitNewE
         'https://pypi.org/simple' : PIP_INDEX_URL;
     const defPkgInsArgs = ['install', '-i', pipRegUrl, '-r', 'requirements.txt'];
     await exec(join(pipPathPrefix, 'pip'), defPkgInsArgs, {
-        cwd: FRAMEWORK_PACKAGE_DIR
+        cwd: envPackDir
     });
+
+    //refresh env cache
+    await outputJSON(join(ENV_CACHE_DIR, 'cache.json'), await makeEnv());
 }
 
 export async function listProjects(got: any): Promise<Array<any>> {
@@ -105,9 +112,9 @@ export async function getProjectIdByName(name: string, got: any): Promise<number
         const projectInfoRaw = await got(`https://cloud.listenai.com/api/v4/groups/1235/projects?search=${name}`);
         const projectInfo: Array<any> = JSON.parse(projectInfoRaw.body);
 
-        return projectInfo[0].id;
+        return projectInfo[0]['id'];
     } catch (e) {
-        throw new Error(`无法获取环境包信息! Error = ${e}`);
+        throw new Error(`无法获取环境包信息! name = ${name}, Error = ${e}`);
     }
 }
 
@@ -141,14 +148,44 @@ export async function checkIfTagExistsByProjectId(tag: string, projectId: number
 
 export async function isLocalEnvironmentConfigured() : Promise<boolean> {
     try {
-        return await pathExists(join(FRAMEWORK_PACKAGE_DIR, 'package.json'));
+        const pkgPaths = readdirSync(FRAMEWORK_PACKAGE_DIR);
+        for (const pkgPath in pkgPaths) {
+            if (pathExistsSync(join(FRAMEWORK_PACKAGE_DIR, pkgPath, 'package.json'))) {
+                return true;
+            }
+        }
+        return false;
     } catch {
         return false;
     }
 }
 
-export async function getLocalEnvironment(): Promise<LocalEnvironment> {
-    if (!(await pathExists(join(FRAMEWORK_PACKAGE_DIR, 'package.json')))) {
+export async function getLocalEnvironment(): Promise<LocalEnvironment[]> {
+    if (!(await pathExists(FRAMEWORK_PACKAGE_DIR))) {
+        return [];
+    }
+
+    const result:LocalEnvironment[] = [];
+    const pkgPaths = readdirSync(FRAMEWORK_PACKAGE_DIR);
+    for (const pkgPath of pkgPaths) {
+        const thisPkgPath = join(FRAMEWORK_PACKAGE_DIR, pkgPath);
+        if (!(pathExistsSync(join(thisPkgPath, 'package.json')))) {
+            continue;
+        }
+
+        const thisPkgEnv = await getLocalEnvironmentByPackageName(pkgPath);
+        if (thisPkgEnv.isInfoCompleted) {
+            result.push(thisPkgEnv);
+        }
+    }
+
+    return result;
+}
+
+async function getLocalEnvironmentByPackageName(package_name: string): Promise<LocalEnvironment> {
+    const thisPkgPath = join(FRAMEWORK_PACKAGE_DIR, package_name);
+
+    if (!(await pathExists(join(thisPkgPath, 'package.json')))) {
         return {
             name: '',
             version: '',
@@ -161,7 +198,7 @@ export async function getLocalEnvironment(): Promise<LocalEnvironment> {
     try {
         const exec = extendExec();
         const { stdout } = await exec('git', [ 'describe', '--tags', '--abbrev=0'], {
-            cwd: FRAMEWORK_PACKAGE_DIR
+            cwd: thisPkgPath
         });
         envVersion = stdout.includes('\n') ? stdout.split('\n')[0] : stdout;
         envVersion = envVersion.startsWith('v') ? stdout.substring(1) : stdout;
@@ -174,7 +211,7 @@ export async function getLocalEnvironment(): Promise<LocalEnvironment> {
         };
     }
 
-    const pkgMetadata = JSON.parse(await readFile(join(FRAMEWORK_PACKAGE_DIR, 'package.json'), 'utf-8'));
+    const pkgMetadata = JSON.parse(await readFile(join(thisPkgPath, 'package.json'), 'utf-8'));
     const envName = pkgMetadata.name;
     const projectId = pkgMetadata.repository.projectId;
     if (envName === undefined || envVersion === undefined || projectId === undefined) {
