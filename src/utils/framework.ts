@@ -149,7 +149,7 @@ export async function checkIfTagExistsByProjectId(tag: string, projectId: number
 export async function isLocalEnvironmentConfigured() : Promise<boolean> {
     try {
         const pkgPaths = readdirSync(FRAMEWORK_PACKAGE_DIR);
-        for (const pkgPath in pkgPaths) {
+        for (const pkgPath of pkgPaths) {
             if (pathExistsSync(join(FRAMEWORK_PACKAGE_DIR, pkgPath, 'package.json'))) {
                 return true;
             }
