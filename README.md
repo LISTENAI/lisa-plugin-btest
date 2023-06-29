@@ -5,13 +5,13 @@ LISA B-Test Plugin [![test](https://github.com/LISTENAI/lisa-plugin-btest/action
 
 ## 请注意非兼容性更新
 
-我们正在 master 分支中准备 B-Test v3.x，此版本中的部分功能更新后可能之前的版本不兼容！
+[B-Test v3.0.0](https://github.com/LISTENAI/lisa-plugin-btest/releases/tag/v3.0.0) 已经发布，此版本中的部分功能更新后可能之前的版本不兼容！
 
-在具体指引发布前，我们建议您使用 Releases 中的版本（如：[v2.3.1](https://github.com/LISTENAI/lisa-plugin-btest/releases/tag/v2.3.1)），避免在开发中出现问题！
+请仔细阅读文档，评估影响，然后对您的测试工程进行升级！
 
-We are preparing B-Test v3.x **with breaking-changes features** in **master branch**.
+We have released B-Test v3.0.0 **with possible breaking-changes** to your test projects.
 
-Before update instructions officially released, we strongly recommend all developers to install stable version(s) like [v2.3.1](https://github.com/LISTENAI/lisa-plugin-btest/releases/tag/v2.3.1) for avoiding possible breaks to current test-flows and / or configurations.
+It's strongly recommended to read through documents, evaluate protenial risks, and proceed to test projects coding!
 
 ## 安装
 
@@ -67,6 +67,17 @@ LISA B-Test 是一套用于对硬件进行行为测试的工作流。它基于�
 test_command: pytest    # 测试命令，如使用 pytest 则是 pytest
 ```
 
+如果需要按系统平台的不同指定不同指令，开发者可使用类似如下的 `lisa-btest.yml` 进行配置：
+**（仅举例，请在开发过程中按需要设置）**
+
+```yml
+test_command: pytest            # 测试命令，如使用 pytest 则是 pytest
+test_command:win32: pytest.exe  # 用于 win32 系统的测试命令
+test_command:linux: pytest -s   # 用于 linux 系统的测试命令
+```
+
+**对于没有在配置中指定的系统平台，B-Test 将默认使用 test_command 中指定的命令。**
+
 该工程假定你的设备已经烧录了待测固件，通过 `lisa btest run` 即可运行测试。
 
 此外，在某些更复杂的测试场景下，你可能需要编写额外的测试固件。你可以参照 [examples/test_gpio](examples/test_gpio/) 将固件源码也放到测试工程里维护。结构如下：
@@ -81,7 +92,7 @@ test_command: pytest    # 测试命令，如使用 pytest 则是 pytest
 对应的 `lisa-btest.yml` 如下：
 
 ```yml
-board: csk6002_c3_nano  # 编译测试固件时所用的 --board
+board: csk6011a_nano    # 编译测试固件时所用的 --board
 test_command: pytest    # 测试命令，如使用 pytest 则是 pytest
 ```
 
@@ -101,9 +112,8 @@ npm install -g @listenai/lisa
 # 安装 LISA B-Test Plugin
 lisa install -g @lisa-plugin/btest
 
-# 进入本仓库的 example，并安装 pytest 及所需的 python 包
-cd examples/test_help
-pip install -r requirements.txt
+# 安装环境包（以使用 legacy 环境包为例）
+lisa btest use-env legacy
 
 # 连接好设备，并生成设备映射
 lisa btest dm:init
@@ -115,14 +125,15 @@ lisa btest run
 ## 命令
 
 ```sh
-lisa btest run            # 运行测试
-lisa btest proj:build     # 构建测试固件
-lisa btest proj:flash     # 烧录测试固件
-lisa btest dm:show        # 显示设备映射
-lisa btest dm:init        # 生成设备映射
-lisa btest list:probe     # 列出可用的调试器
-lisa btest list:shell     # 列出可用的串口设备
-lisa btest list:usb2xxx   # 列出可用的 USB2XXX 设备
+lisa btest run                    # 运行测试
+lisa btest proj:build             # 构建测试固件
+lisa btest proj:flash             # 烧录测试固件
+lisa btest dm:show                # 显示设备映射
+lisa btest dm:init                # 生成设备映射
+lisa btest list:probe             # 列出可用的调试器
+lisa btest list:shell             # 列出可用的串口设备
+lisa btest list:usb2xxx           # 列出可用的 USB2XXX 设备
+lisa btest use-env {envPackName}  # 安装环境包
 ```
 
 ## Python API
